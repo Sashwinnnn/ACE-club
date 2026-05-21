@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ace Club Admin Panel</title>
+    <title>Ace Club - Admin Ledger</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chrono-node@2.4.12/dist/chrono.min.js"></script>
-    
+
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -21,85 +21,355 @@
             --success-hover: #059669;
             --danger: #ef4444;
             --danger-hover: #dc2626;
-            --modal-bg: rgba(15, 23, 42, 0.85);
+            --nav-bg: rgba(11, 15, 25, 0.85);
+            --modal-bg: rgba(11, 15, 25, 0.9);
             --ai-blue: #38bdf8;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 3rem 1.5rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-
-        .admin-container {
-            max-width: 1150px; width: 100%; background-color: var(--card-bg);
-            padding: 3rem 2rem; border-radius: 16px; border: 1px solid #334155;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center;
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; 
+        }
+        
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            min-height: 100vh;
+            padding-top: 100px; 
+            padding-bottom: 4rem;
         }
 
-        h1 { font-size: 2.2rem; color: var(--text-main); margin-bottom: 0.5rem; font-weight: 700; }
-        p { color: var(--text-muted); margin-bottom: 2.5rem; }
+        /* --- FIXED NAVIGATION BAR --- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 80px;
+            background-color: var(--nav-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid #334155;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 3rem;
+            z-index: 5000;
+        }
+
+        .nav-logo {
+            font-weight: 800;
+            font-size: 1.3rem;
+            color: var(--text-main);
+            letter-spacing: 0.5px;
+        }
+
+        .nav-logo span {
+            color: var(--accent);
+        }
+
+        .badge {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent);
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
+            font-weight: 700;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        /* --- MAIN LAYOUT HIERARCHY --- */
+        .container {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 0 2rem;
+            text-align: center;
+        }
+
+        /* --- THEMED GATEWAY LOGIN INTERFACE --- */
+        .login-card {
+            background-color: var(--card-bg);
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 3.5rem 2.5rem;
+            max-width: 500px;
+            width: 100%;
+            margin: 4rem auto 0 auto;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .login-card h2 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(to right, #f8fafc, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .login-card p {
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        input, select {
+            background-color: var(--input-bg); 
+            border: 1px solid #334155; 
+            color: var(--text-main);
+            padding: 0.85rem 1.25rem; 
+            border-radius: 10px; 
+            font-size: 1rem; 
+            width: 100%; 
+            max-width: 350px; 
+            margin-bottom: 1.25rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            border-color: var(--accent);
+        }
 
         .cta-btn {
-            background-color: var(--accent); color: white; border: none; font-weight: 700;
-            padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+            background-color: var(--accent); 
+            color: white; 
+            border: none; 
+            font-weight: 700;
+            padding: 0.85rem 2.5rem; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            transition: background-color 0.2s;
         }
         .cta-btn:hover { background-color: var(--accent-hover); }
 
-        input, select {
-            background-color: var(--input-bg); border: 1px solid #334155; color: var(--text-main);
-            padding: 0.75rem; border-radius: 8px; font-size: 1rem; width: 100%; max-width: 350px; margin-bottom: 1rem;
+        header {
+            margin-bottom: 3rem;
+            text-align: left;
         }
 
-        /* DATA TABLE STYLE */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 2rem; text-align: left; }
-        .admin-table th, .admin-table td { padding: 1rem; border-bottom: 1px solid #334155; }
-        .admin-table th { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
-        .admin-table td { color: #e2e8f0; font-size: 0.95rem; }
-        
-        /* ACTION BUTTONS */
-        .action-flex { display: flex; gap: 0.5rem; }
-        .accept-btn {
-            background-color: var(--success); color: white; border: none; padding: 0.5rem 1rem;
-            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        header h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #f8fafc, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
         }
-        .accept-btn:hover { background-color: var(--success-hover); }
 
-        .delete-btn {
-            background-color: var(--danger); color: white; border: none; padding: 0.5rem 1rem;
-            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
         }
-        .delete-btn:hover { background-color: var(--danger-hover); }
 
-        /* MODAL POPUP BACKGROUND OVERLAY */
+        /* --- EYE-CATCHING GRID SYSTEM --- */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 2rem;
+        }
+
+        /* --- POP-OUT STYLE CARDS --- */
+        .request-card {
+            background-color: var(--card-bg);
+            border: 1px solid #334155;
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.25s, box-shadow 0.25s;
+        }
+
+        .request-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: var(--accent);
+            box-shadow: 0 20px 30px -10px rgba(168, 85, 247, 0.25);
+        }
+
+        .subject-tag {
+            position: absolute;
+            top: 0;
+            right: 2rem;
+            background-color: var(--input-bg);
+            border: 1px solid #334155;
+            border-top: none;
+            color: #c084fc;
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .student-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 1.25rem;
+            margin-top: 0.5rem;
+            padding-right: 6rem;
+            text-align: left;
+        }
+
+        .info-block {
+            background-color: var(--input-bg);
+            border: 1px solid #233149;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            text-align: left;
+        }
+
+        .info-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--accent);
+            font-weight: 800;
+            margin-bottom: 0.4rem;
+        }
+
+        .info-text {
+            font-size: 0.95rem;
+            color: #f1f5f9;
+            line-height: 1.5;
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+        }
+
+        .btn {
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .btn-action {
+            background-color: var(--accent);
+            color: white;
+        }
+        .btn-action:hover { background-color: var(--accent-hover); }
+        .btn-action:active { transform: scale(0.97); }
+
+        .btn-delete {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+        .btn-delete:hover { 
+            background-color: var(--danger); 
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .no-requests {
+            grid-column: 1 / -1;
+            background-color: var(--card-bg);
+            border: 2px dashed #334155;
+            padding: 5rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        /* --- GLASSMORPHIC POPUP FRAME --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--modal-bg); backdrop-filter: blur(8px);
+            background-color: var(--modal-bg); 
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             display: flex; justify-content: center; align-items: center;
-            z-index: 2000; display: none; 
+            z-index: 6000; display: none; 
         }
 
         .modal-box {
-            background-color: var(--card-bg); border: 1px solid #334155;
-            padding: 2.5rem; border-radius: 16px; max-width: 500px; width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: left;
+            background-color: #111827; 
+            border: 1px solid #334155;
+            padding: 3rem 2.5rem; 
+            border-radius: 20px; 
+            max-width: 520px; 
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
+            text-align: left;
         }
 
-        .modal-box h2 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent); }
-        .modal-box p { font-size: 0.95rem; margin-bottom: 1.5rem; }
-        .modal-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
-        .modal-group label { font-weight: 600; font-size: 0.9rem; }
+        .modal-box h2 { 
+            font-size: 1.65rem; 
+            font-weight: 800;
+            margin-bottom: 0.5rem; 
+            background: linear-gradient(to right, #f8fafc, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .modal-box p { font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;}
+        
+        .modal-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+        .modal-group label { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
         .modal-group input { max-width: 100%; margin-bottom: 0; }
 
-        .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
-        .modal-actions button { flex: 1; padding: 0.75rem; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; }
+        .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+        .modal-actions button { 
+            flex: 1; 
+            padding: 0.85rem; 
+            border-radius: 10px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            border: none; 
+            transition: background-color 0.2s;
+        }
 
         .hidden { display: none !important; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 0 1.5rem; }
+            header h1 { font-size: 2rem; }
+            .grid-container { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h1>Ace Club Data Center</h1>
+    <nav class="navbar">
+        <div class="nav-logo">ACE<span> CLUB</span></div>
+        <div class="badge">Admin Control</div>
+    </nav>
+
+    <div class="container">
         
-        <div id="loginArea">
+        <div id="loginArea" class="login-card">
+            <h2>Ace Club Data Center</h2>
             <p>Enter the administrator gateway access token to pull the cloud stream.</p>
             <input type="password" id="accessCode" placeholder="Enter system password...">
             <br>
@@ -107,20 +377,15 @@
         </div>
 
         <div id="dashboardArea" class="hidden">
-            <p style="color: #34d399; font-weight: 600; margin-bottom: 2rem;">✓ Security handshake valid. Connection to Firestore collection alive.</p>
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Student Name</th>
-                        <th>Subject</th>
-                        <th>Topic Details</th>
-                        <th>Availability Given</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    </tbody>
-            </table>
+            <header>
+                <h1>Live Booking Ledger</h1>
+                <p style="color: #34d399; font-weight: 600; margin-bottom: 1rem;">✓ Security handshake valid. Connection to Firestore collection alive.</p>
+                <p>Review incoming session requests and manage your client queue in real-time.</p>
+            </header>
+
+            <div class="grid-container" id="ledgerGrid">
+                <div class="no-requests" id="loadingState">Synchronizing cloud database pipelines...</div>
+            </div>
         </div>
     </div>
 
@@ -154,15 +419,16 @@
     <script>
         // --- PASTE YOUR FIREBASE KEYS HERE ---
         const firebaseConfig = {
-  apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
-  authDomain: "ace-club-portal.firebaseapp.com",
-  projectId: "ace-club-portal",
-  storageBucket: "ace-club-portal.firebasestorage.app",
-  messagingSenderId: "771528519998",
-  appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
-};
+            apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
+            authDomain: "ace-club-portal.firebaseapp.com",
+            projectId: "ace-club-portal",
+            storageBucket: "ace-club-portal.firebasestorage.app",
+            messagingSenderId: "771528519998",
+            appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
+        };
         // ----------------------------------------------
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
@@ -180,63 +446,87 @@
             }
         });
 
-        // Live Cloud Stream Reader
+        // Realtime Data Pipeline into Cards Layout
         function startLiveStream() {
             db.collection("requests").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                const tableBody = document.getElementById('tableBody');
-                tableBody.innerHTML = ""; 
+                const grid = document.getElementById("ledgerGrid");
+                grid.innerHTML = ""; 
+
+                if (snapshot.empty) {
+                    grid.innerHTML = `<div class="no-requests">No incoming session requests found in the ledger.</div>`;
+                    return;
+                }
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
-                    const docId = doc.id;
+                    const requestId = doc.id;
                     
                     const safeName = data.name.replace(/['"]/g, "");
                     const safeSubject = data.subject.replace(/['"]/g, "");
                     const safeDetails = data.details.replace(/['"]/g, "");
                     const safeAvail = data.availability.replace(/['"]/g, "");
                     
-                    const row = `
-                        <tr>
-                            <td><strong>${data.name}</strong></td>
-                            <td><span style="color:#c084fc;">${data.subject}</span></td>
-                            <td>${data.details}</td>
-                            <td><em>${data.availability}</em></td>
-                            <td>
-                                <div class="action-flex">
-                                    <button class="accept-btn" onclick="openApprovalModal('${docId}', '${safeName}', '${safeSubject}', '${safeDetails}', '${safeAvail}')">Accept</button>
-                                    <button class="delete-btn" onclick="deleteRequest('${docId}')">Delete</button>
+                    let dateString = "Pending Time Log...";
+                    if (data.timestamp) {
+                        const jsDate = data.timestamp.toDate();
+                        dateString = jsDate.toLocaleDateString() + ' @ ' + jsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    }
+
+                    const cardHTML = `
+                        <div class="request-card" id="card-${requestId}">
+                            <div class="subject-tag">${escapeHTML(data.subject)}</div>
+                            
+                            <div>
+                                <div class="student-name">${escapeHTML(data.name)}</div>
+                                
+                                <div class="info-block">
+                                    <div class="info-label">Topics to Review</div>
+                                    <div class="info-text">${escapeHTML(data.details)}</div>
                                 </div>
-                            </td>
-                        </tr>
+                                
+                                <div class="info-block">
+                                    <div class="info-label">Student Availability</div>
+                                    <div class="info-text">${escapeHTML(data.availability)}</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="timestamp">
+                                    <span>🕒</span> Logged: ${dateString}
+                                </div>
+                                
+                                <div class="card-actions">
+                                    <button class="btn btn-action" onclick="openApprovalModal('${requestId}', '${safeName.replace(/'/g, "\\'")}', '${safeSubject.replace(/'/g, "\\'")}', '${safeDetails.replace(/'/g, "\\'")}', '${safeAvail.replace(/'/g, "\\'")}')">Schedule</button>
+                                    <button class="btn btn-delete" onclick="deleteRequest('${requestId}')">Dismiss</button>
+                                </div>
+                            </div>
+                        </div>
                     `;
-                    tableBody.innerHTML += row;
+                    grid.innerHTML += cardHTML;
                 });
+            }, (error) => {
+                console.error("Database sync error: ", error);
+                document.getElementById("ledgerGrid").innerHTML = `<div class="no-requests" style="color:var(--danger)">⚠️ Failed to authenticate database stream pipeline.</div>`;
             });
         }
 
-        // MODAL CONFIGURATION WITH DETAILED FORCE-MATCHING AUTO-FILL
+        // Processing Modal with Automated Text Scanning
         function openApprovalModal(id, name, subject, details, availability) {
             activeRecord = { id, name, subject, details };
             
             document.getElementById('modalSubtext').innerText = `Matching ${name} for ${subject}.\nStudent requested: "${availability}"`;
             
-            // Clean previous input values completely before processing
             document.getElementById('eventDate').value = "";
             document.getElementById('startTime').value = "";
             document.getElementById('endTime').value = "";
             document.getElementById('aiLog').innerText = "";
             
-            // Standardize text scanning variables
             let cleanedText = availability.toLowerCase().trim();
-            
-            // Fix common typos instantly
-            cleanedText = cleanedText.replace(/\bafert\b/g, "after");
-            cleanedText = cleanedText.replace(/\baftr\b/g, "after");
-            cleanedText = cleanedText.replace(/\bpm\b/g, " pm"); 
-            cleanedText = cleanedText.replace(/\bam\b/g, " am");
+            cleanedText = cleanedText.replace(/\bafert\b/g, "after").replace(/\baftr\b/g, "after");
+            cleanedText = cleanedText.replace(/\bpm\b/g, " pm").replace(/\bam\b/g, " am");
 
             let targetDate = new Date();
-            let hours = "16"; // Default fallback: 4:00 PM (16:00)
+            let hours = "16"; 
             let minutes = "00";
             let overrideSuccess = false;
 
@@ -245,19 +535,16 @@
                 "thursday": 4, "friday": 5, "saturday": 6
             };
 
-            // SCAN STRING FOR RELATIVE WEEKDAYS
             for (let dayName in weekdaysMap) {
                 if (cleanedText.includes(dayName)) {
                     let targetDayIndex = weekdaysMap[dayName];
                     let currentDayIndex = targetDate.getDay();
                     
-                    // Calculate relative distance loops to push calendar days forward
                     let daysToAdd = (targetDayIndex + 7 - currentDayIndex) % 7;
-                    if (daysToAdd === 0) daysToAdd = 7; // If today is Monday, target next Monday
+                    if (daysToAdd === 0) daysToAdd = 7; 
                     
                     targetDate.setDate(targetDate.getDate() + daysToAdd);
                     
-                    // Direct context parser scans for custom hour adjustments
                     if (cleanedText.includes("1") || cleanedText.includes("1pm")) hours = "13";
                     if (cleanedText.includes("2") || cleanedText.includes("2pm")) hours = "14";
                     if (cleanedText.includes("3") || cleanedText.includes("3pm")) hours = "15";
@@ -272,22 +559,17 @@
 
             try {
                 if (overrideSuccess) {
-                    // Extract custom date mapping strings
                     const year = targetDate.getFullYear();
                     const month = String(targetDate.getMonth() + 1).padStart(2, '0');
                     const day = String(targetDate.getDate()).padStart(2, '0');
-                    
                     const calculatedEndHour = String((parseInt(hours) + 1) % 24).padStart(2, '0');
 
                     document.getElementById('eventDate').value = `${year}-${month}-${day}`;
                     document.getElementById('startTime').value = `${hours}:${minutes}`;
                     document.getElementById('endTime').value = `${calculatedEndHour}:${minutes}`;
-
                     document.getElementById('aiLog').innerText = "✨ Auto-Fill Engine: Repaired typo, resolved text phrase context, and mapped calendar logs!";
                 } else {
-                    // Standard strict library parsing loop fallback
                     const parsedTimeline = chrono.parseDate(cleanedText);
-
                     if (parsedTimeline) {
                         const trackingDate = new Date(parsedTimeline);
                         const year = trackingDate.getFullYear();
@@ -301,28 +583,25 @@
                         document.getElementById('eventDate').value = `${year}-${month}-${day}`;
                         document.getElementById('startTime').value = `${libHours}:${libMin}`;
                         document.getElementById('endTime').value = `${calculatedEndHour}:${libMin}`;
-
                         document.getElementById('aiLog').innerText = "✨ Auto-Fill Engine: Extracted absolute timestamp coordinates!";
                     } else {
                         document.getElementById('aiLog').innerText = "ℹ️ Auto-Fill Engine: Free format detected. Please fill parameters manually.";
                     }
                 }
             } catch (err) {
-                console.warn("Parsing system encountered an exception: ", err);
                 document.getElementById('aiLog').innerText = "ℹ/ Manual configuration fallback active.";
             }
 
-            // Display modal layer via CSS flex adjustments
             document.getElementById('calendarModal').style.display = 'flex';
         }
 
-        // CLOSE MODAL ACTION BUTTON
+        // Close Pop-up Window
         document.getElementById('closeModalBtn').addEventListener('click', function() {
             document.getElementById('calendarModal').style.display = 'none';
             activeRecord = null;
         });
 
-        // GOOGLE CALENDAR LINK DISPATCH WITH LOCAL TIME ZONE REMAPPING
+        // Time-zone Preserving Google Calendar Event Dispatcher
         document.getElementById('govGoogleBtn').addEventListener('click', function() {
             if (!activeRecord) return;
 
@@ -339,7 +618,6 @@
             const cleanStart = startInput.replace(/:/g, "");
             const cleanEnd = endInput.replace(/:/g, "");
 
-            // Dropping trailing UTC symbols forces Google to respect your native time zone settings
             const startTimeline = `${cleanDate}T${cleanStart}00`;
             const endTimeline = `${cleanDate}T${cleanEnd}00`;
 
@@ -348,15 +626,22 @@
             const textDetails = encodeURIComponent(`Topic Details: ${activeRecord.details}`);
             
             const fullUrl = `${baseUrl}&text=${title}&dates=${startTimeline}/${endTimeline}&details=${textDetails}`;
-            
             window.open(fullUrl, "_blank");
         });
 
-        // Direct Table Row Deletion
+        // Clean Database Queue Scrubbing
         function deleteRequest(id) {
             if (confirm("Permanently wipe this record from database queue?")) {
                 db.collection("requests").doc(id).delete();
             }
+        }
+
+        // HTML Encoding Utility
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
         }
     </script>
 </body>
