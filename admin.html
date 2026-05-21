@@ -24,6 +24,8 @@
             --nav-bg: rgba(11, 15, 25, 0.85);
             --modal-bg: rgba(11, 15, 25, 0.9);
             --ai-blue: #38bdf8;
+            --email-blue: #0284c7;
+            --email-blue-hover: #0369a1;
         }
 
         * { 
@@ -41,7 +43,6 @@
             padding-bottom: 4rem;
         }
 
-        /* --- FIXED NAVIGATION BAR --- */
         .navbar {
             position: fixed;
             top: 0;
@@ -82,7 +83,6 @@
             border: 1px solid rgba(168, 85, 247, 0.3);
         }
 
-        /* --- MAIN LAYOUT HIERARCHY --- */
         .container {
             max-width: 1200px;
             width: 100%;
@@ -91,7 +91,6 @@
             text-align: center;
         }
 
-        /* --- THEMED GATEWAY LOGIN INTERFACE --- */
         .login-card {
             background-color: var(--card-bg);
             border: 1px solid #334155;
@@ -166,14 +165,12 @@
             font-size: 1.05rem;
         }
 
-        /* --- EYE-CATCHING GRID SYSTEM --- */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
             gap: 2rem;
         }
 
-        /* --- POP-OUT STYLE CARDS --- */
         .request-card {
             background-color: var(--card-bg);
             border: 1px solid #334155;
@@ -304,7 +301,6 @@
             font-weight: 600;
         }
 
-        /* --- GLASSMORPHIC POPUP FRAME --- */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: var(--modal-bg); 
@@ -319,7 +315,7 @@
             border: 1px solid #334155;
             padding: 3rem 2.5rem; 
             border-radius: 20px; 
-            max-width: 520px; 
+            max-width: 550px; 
             width: 100%;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
             text-align: left;
@@ -339,7 +335,7 @@
         .modal-group label { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
         .modal-group input { max-width: 100%; margin-bottom: 0; }
 
-        .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+        .modal-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
         .modal-actions button { 
             flex: 1; 
             padding: 0.85rem; 
@@ -348,6 +344,7 @@
             cursor: pointer; 
             border: none; 
             transition: background-color 0.2s;
+            font-size: 0.9rem;
         }
 
         .hidden { display: none !important; }
@@ -411,13 +408,13 @@
 
             <div class="modal-actions">
                 <button id="govGoogleBtn" style="background-color: var(--success); color: white;">Sync Google Cal</button>
-                <button id="closeModalBtn" style="background-color: #475569; color: white;">Close / Done</button>
+                <button id="sendEmailBtn" style="background-color: var(--email-blue); color: white;">Email Confirmation</button>
+                <button id="closeModalBtn" style="background-color: #475569; color: white; flex-basis: 100%;">Close / Done</button>
             </div>
         </div>
     </div>
 
     <script>
-        // --- PASTE YOUR FIREBASE KEYS HERE ---
         const firebaseConfig = {
             apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
             authDomain: "ace-club-portal.firebaseapp.com",
@@ -426,15 +423,12 @@
             messagingSenderId: "771528519998",
             appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
         };
-        // ----------------------------------------------
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let activeRecord = null;
 
-        // Gateway Authentication
         document.getElementById('loginBtn').addEventListener('click', function() {
             const token = document.getElementById('accessCode').value;
             if (token === "123") {
@@ -446,7 +440,13 @@
             }
         });
 
-        // Realtime Data Pipeline into Cards Layout
+        function escapeHTML(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+            );
+        }
+
         function startLiveStream() {
             db.collection("requests").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 const grid = document.getElementById("ledgerGrid");
@@ -461,10 +461,11 @@
                     const data = doc.data();
                     const requestId = doc.id;
                     
-                    const safeName = data.name.replace(/['"]/g, "");
-                    const safeSubject = data.subject.replace(/['"]/g, "");
-                    const safeDetails = data.details.replace(/['"]/g, "");
-                    const safeAvail = data.availability.replace(/['"]/g, "");
+                    const safeName = data.name ? data.name.replace(/['"]/g, "") : "Unknown Student";
+                    const safeEmail = data.email ? data.email.replace(/['"]/g, "") : "";
+                    const safeSubject = data.subject ? data.subject.replace(/['"]/g, "") : "";
+                    const safeDetails = data.details ? data.details.replace(/['"]/g, "") : "";
+                    const safeAvail = data.availability ? data.availability.replace(/['"]/g, "") : "";
                     
                     let dateString = "Pending Time Log...";
                     if (data.timestamp) {
@@ -472,21 +473,30 @@
                         dateString = jsDate.toLocaleDateString() + ' @ ' + jsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     }
 
+                    // Properly format parameters for the inline function call
+                    const onClickParams = `openApprovalModal('${requestId}', '${safeName.replace(/'/g, "\\'")}', '${safeEmail.replace(/'/g, "\\'")}', '${safeSubject.replace(/'/g, "\\'")}', '${safeDetails.replace(/'/g, "\\'")}', '${safeAvail.replace(/'/g, "\\'")}')`;
+
                     const cardHTML = `
                         <div class="request-card" id="card-${requestId}">
-                            <div class="subject-tag">${escapeHTML(data.subject)}</div>
+                            <div class="subject-tag">${escapeHTML(safeSubject)}</div>
                             
                             <div>
-                                <div class="student-name">${escapeHTML(data.name)}</div>
+                                <div class="student-name">${escapeHTML(safeName)}</div>
                                 
+                                ${safeEmail ? `
+                                <div class="info-block">
+                                    <div class="info-label">Contact Email</div>
+                                    <div class="info-text" style="color: var(--ai-blue);">${escapeHTML(safeEmail)}</div>
+                                </div>` : ''}
+
                                 <div class="info-block">
                                     <div class="info-label">Topics to Review</div>
-                                    <div class="info-text">${escapeHTML(data.details)}</div>
+                                    <div class="info-text">${escapeHTML(safeDetails)}</div>
                                 </div>
                                 
                                 <div class="info-block">
                                     <div class="info-label">Student Availability</div>
-                                    <div class="info-text">${escapeHTML(data.availability)}</div>
+                                    <div class="info-text">${escapeHTML(safeAvail)}</div>
                                 </div>
                             </div>
 
@@ -496,7 +506,7 @@
                                 </div>
                                 
                                 <div class="card-actions">
-                                    <button class="btn btn-action" onclick="openApprovalModal('${requestId}', '${safeName.replace(/'/g, "\\'")}', '${safeSubject.replace(/'/g, "\\'")}', '${safeDetails.replace(/'/g, "\\'")}', '${safeAvail.replace(/'/g, "\\'")}')">Schedule</button>
+                                    <button class="btn btn-action" onclick="${onClickParams}">Schedule</button>
                                     <button class="btn btn-delete" onclick="deleteRequest('${requestId}')">Dismiss</button>
                                 </div>
                             </div>
@@ -510,11 +520,10 @@
             });
         }
 
-        // Processing Modal with Automated Text Scanning
-        function openApprovalModal(id, name, subject, details, availability) {
-            activeRecord = { id, name, subject, details };
+        function openApprovalModal(id, name, email, subject, details, availability) {
+            activeRecord = { id, name, email, subject, details };
             
-            document.getElementById('modalSubtext').innerText = `Matching ${name} for ${subject}.\nStudent requested: "${availability}"`;
+            document.getElementById('modalSubtext').innerText = `Matching ${name} (${email || 'No email collected'}) for ${subject}.\nStudent requested: "${availability}"`;
             
             document.getElementById('eventDate').value = "";
             document.getElementById('startTime').value = "";
@@ -595,19 +604,17 @@
             document.getElementById('calendarModal').style.display = 'flex';
         }
 
-        // Close Pop-up Window
         document.getElementById('closeModalBtn').addEventListener('click', function() {
             document.getElementById('calendarModal').style.display = 'none';
             activeRecord = null;
         });
 
-        // Time-zone Preserving Google Calendar Event Dispatcher
         document.getElementById('govGoogleBtn').addEventListener('click', function() {
             if (!activeRecord) return;
 
             const dateInput = document.getElementById('eventDate').value;     
-            const startInput = document.getElementById('startTime').value;   
-            const endInput = document.getElementById('endTime').value;       
+            const startInput = document.getElementById('startTime').value;    
+            const endInput = document.getElementById('endTime').value;        
 
             if (!dateInput || !startInput || !endInput) {
                 alert("Please select a Date, Start Time, and End Time first!");
@@ -623,25 +630,75 @@
 
             const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
             const title = encodeURIComponent(`[Ace Club] ${activeRecord.subject} Tutoring with ${activeRecord.name}`);
-            const textDetails = encodeURIComponent(`Topic Details: ${activeRecord.details}`);
+            const textDetails = encodeURIComponent(`Student Name: ${activeRecord.name}\nEmail: ${activeRecord.email || 'None'}\nTopic Details: ${activeRecord.details}`);
             
-            const fullUrl = `${baseUrl}&text=${title}&dates=${startTimeline}/${endTimeline}&details=${textDetails}`;
+            let fullUrl = `${baseUrl}&text=${title}&dates=${startTimeline}/${endTimeline}&details=${textDetails}`;
+            if (activeRecord.email) {
+                fullUrl += `&add=${encodeURIComponent(activeRecord.email)}`;
+            }
+            
             window.open(fullUrl, "_blank");
         });
 
-        // Clean Database Queue Scrubbing
+        // Web Gmail Direct Injection Engine
+        document.getElementById('sendEmailBtn').addEventListener('click', function() {
+            if (!activeRecord) return;
+            if (!activeRecord.email) {
+                alert("This student didn't provide an email address.");
+                return;
+            }
+
+            const dateInput = document.getElementById('eventDate').value;
+            const startInput = document.getElementById('startTime').value;
+
+            if (!dateInput || !startInput) {
+                alert("Please select a Date and Start Time first so the email details match!");
+                return;
+            }
+
+            const formattedDate = new Date(dateInput + 'T00:00:00').toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            const emailSubject = `Ace Club Session Confirmed! Let's Crush Your ${activeRecord.subject} Goals 🚀`;
+            const emailBody = `Hi ${activeRecord.name},
+
+Fantastic news! Your booking request for ${activeRecord.subject} has been officially approved and locked into the ledger. 
+
+Taking the initiative to schedule this session shows real dedication to your growth. This is the first major step toward breaking through your academic bottlenecks, and you should be proud of taking action today!
+
+🗓 Here are your session details:
+• Scheduled Date: ${formattedDate}
+• Start Time: ${startInput}
+
+⚠️ CRITICAL NEXT STEPS:
+1. Check Your Inbox: I have sent a calendar invitation directly to your email (${activeRecord.email}). 
+2. Accept the Invitation: Please open that invitation and click "YES" or "ACCEPT" to lock this into your schedule.
+3. Review Your Calendar: Double-check your Google Calendar application to make sure the time slot shows up smoothly on your end.
+
+We are going to map out an absolute roadmap for your targeted topics (${activeRecord.details}) and make sure you walk away feeling fully confident. 
+
+Bring your questions, bring your energy, and let's crush it!
+
+Best regards,
+Ace Club Administration`;
+
+            const targetStudent = encodeURIComponent(activeRecord.email);
+            const escapedSubject = encodeURIComponent(emailSubject);
+            const escapedBody = encodeURIComponent(emailBody);
+
+            const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetStudent}&su=${escapedSubject}&body=${escapedBody}`;
+
+            window.open(gmailWebUrl, '_blank');
+        });
+
         function deleteRequest(id) {
             if (confirm("Permanently wipe this record from database queue?")) {
                 db.collection("requests").doc(id).delete();
             }
-        }
-
-        // HTML Encoding Utility
-        function escapeHTML(str) {
-            if (!str) return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
         }
     </script>
 </body>
