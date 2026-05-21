@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ace Club Admin Panel</title>
+    <title>ACE Club Admin Panel</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
     
@@ -13,16 +13,18 @@
             --card-bg: #1e293b;
             --text-main: #f8fafc;
             --text-muted: #94a3b8;
-            --accent: #a855f7; /* Purple themes distinguish admin workspace */
+            --accent: #a855f7; 
             --accent-hover: #9333ea;
             --input-bg: #0f172a;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--bg-color); color: var(--text-main); padding: 3rem 1.5rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
 
         .admin-container {
-            max-width: 1000px; width: 100%; background-color: var(--card-bg);
+            max-width: 1050px; width: 100%; background-color: var(--card-bg);
             padding: 3rem 2rem; border-radius: 16px; border: 1px solid #334155;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center;
         }
@@ -47,13 +49,20 @@
         .admin-table th { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
         .admin-table td { color: #e2e8f0; font-size: 0.95rem; }
         
+        /* DELETE BUTTON */
+        .delete-btn {
+            background-color: var(--danger); color: white; border: none; padding: 0.5rem 1rem;
+            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.85rem;
+        }
+        .delete-btn:hover { background-color: var(--danger-hover); transform: scale(1.05); }
+
         .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
     <div class="admin-container">
-        <h1>ACE Club Data Center</h1>
+        <h1>Ace Club Data Center</h1>
         
         <div id="loginArea">
             <p>Enter the administrator gateway access token to pull the cloud stream.</p>
@@ -71,6 +80,7 @@
                         <th>Subject</th>
                         <th>Topic Details</th>
                         <th>Student Availability</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody">
@@ -80,7 +90,7 @@
     </div>
 
     <script>
-        // --- PASTE THE EXACT SAME FIREBASE KEYS HERE ---
+        // --- PASTE YOUR FIREBASE KEYS HERE ---
         const firebaseConfig = {
   apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
   authDomain: "ace-club-portal.firebaseapp.com",
@@ -98,7 +108,7 @@
         document.getElementById('loginBtn').addEventListener('click', function() {
             const token = document.getElementById('accessCode').value;
             
-            if (token === "ACE-admins123") {
+            if (token === "ACE-admin123") {
                 document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('dashboardArea').classList.remove('hidden');
                 startLiveStream();
@@ -115,17 +125,34 @@
 
                 snapshot.forEach((doc) => {
                     const data = doc.data();
+                    const docId = doc.id; // Extracts the exact cloud ID for deletion
+                    
                     const row = `
                         <tr>
                             <td><strong>${data.name}</strong></td>
                             <td><span style="color:#c084fc;">${data.subject}</span></td>
                             <td>${data.details}</td>
                             <td>${data.availability}</td>
+                            <td>
+                                <button class="delete-btn" onclick="deleteRequest('${docId}')">Delete</button>
+                            </td>
                         </tr>
                     `;
                     tableBody.innerHTML += row;
                 });
             });
+        }
+
+        // Cloud Deletion Trigger Function
+        function deleteRequest(id) {
+            if (confirm("Are you sure you want to permanently remove this request from the database?")) {
+                db.collection("requests").doc(id).delete().then(() => {
+                    console.log("Document successfully deleted from cloud.");
+                }).catch((error) => {
+                    console.error("Error removing document: ", error);
+                    alert("Failed to delete record from database.");
+                });
+            }
         }
     </script>
 </body>
