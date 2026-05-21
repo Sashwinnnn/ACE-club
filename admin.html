@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ace Club Admin Panel</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #a855f7; /* Purple themes distinguish admin workspace */
+            --accent-hover: #9333ea;
+            --input-bg: #0f172a;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: var(--bg-color); color: var(--text-main); padding: 3rem 1.5rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+
+        .admin-container {
+            max-width: 1000px; width: 100%; background-color: var(--card-bg);
+            padding: 3rem 2rem; border-radius: 16px; border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center;
+        }
+
+        h1 { font-size: 2.2rem; color: var(--text-main); margin-bottom: 0.5rem; font-weight: 700; }
+        p { color: var(--text-muted); margin-bottom: 2.5rem; }
+
+        .cta-btn {
+            background-color: var(--accent); color: white; border: none; font-weight: 700;
+            padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;
+        }
+        .cta-btn:hover { background-color: var(--accent-hover); }
+
+        input {
+            background-color: var(--input-bg); border: 1px solid #334155; color: var(--text-main);
+            padding: 0.75rem; border-radius: 8px; font-size: 1rem; width: 100%; max-width: 350px; margin-bottom: 1rem;
+        }
+
+        /* DATA TABLE STYLE */
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 2rem; text-align: left; }
+        .admin-table th, .admin-table td { padding: 1rem; border-bottom: 1px solid #334155; }
+        .admin-table th { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
+        .admin-table td { color: #e2e8f0; font-size: 0.95rem; }
+        
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-container">
+        <h1>ACE Club Data Center</h1>
+        
+        <div id="loginArea">
+            <p>Enter the administrator gateway access token to pull the cloud stream.</p>
+            <input type="password" id="accessCode" placeholder="Enter system password...">
+            <br>
+            <button id="loginBtn" class="cta-btn">Verify Token</button>
+        </div>
+
+        <div id="dashboardArea" class="hidden">
+            <p style="color: #34d399; font-weight: 600; margin-bottom: 2rem;">✓ Security handshake valid. Connection to Firestore collection alive.</p>
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Subject</th>
+                        <th>Topic Details</th>
+                        <th>Student Availability</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // --- PASTE THE EXACT SAME FIREBASE KEYS HERE ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
+  authDomain: "ace-club-portal.firebaseapp.com",
+  projectId: "ace-club-portal",
+  storageBucket: "ace-club-portal.firebasestorage.app",
+  messagingSenderId: "771528519998",
+  appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
+};
+        // ----------------------------------------------
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Gateway Authentication
+        document.getElementById('loginBtn').addEventListener('click', function() {
+            const token = document.getElementById('accessCode').value;
+            
+            if (token === "ACE-admins123") {
+                document.getElementById('loginArea').classList.add('hidden');
+                document.getElementById('dashboardArea').classList.remove('hidden');
+                startLiveStream();
+            } else {
+                alert("Access Denied: Token Invalid.");
+            }
+        });
+
+        // Pull real-time streams out of cloud
+        function startLiveStream() {
+            db.collection("requests").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                const tableBody = document.getElementById('tableBody');
+                tableBody.innerHTML = ""; 
+
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const row = `
+                        <tr>
+                            <td><strong>${data.name}</strong></td>
+                            <td><span style="color:#c084fc;">${data.subject}</span></td>
+                            <td>${data.details}</td>
+                            <td>${data.availability}</td>
+                        </tr>
+                    `;
+                    tableBody.innerHTML += row;
+                });
+            });
+        }
+    </script>
+</body>
+</html>
