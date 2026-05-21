@@ -3,11 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ace Club Admin Panel</title>
+    <title>Ace Club - Book a Session</title>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chrono-node@2.4.12/dist/chrono.min.js"></script>
-    
+
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -18,346 +17,180 @@
             --accent-hover: #9333ea;
             --input-bg: #0f172a;
             --success: #10b981;
-            --success-hover: #059669;
-            --danger: #ef4444;
-            --danger-hover: #dc2626;
-            --modal-bg: rgba(15, 23, 42, 0.85);
-            --ai-blue: #38bdf8;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-        body { background-color: var(--bg-color); color: var(--text-main); padding: 3rem 1.5rem; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-
-        .admin-container {
-            max-width: 1150px; width: 100%; background-color: var(--card-bg);
-            padding: 3rem 2rem; border-radius: 16px; border: 1px solid #334155;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); text-align: center;
+        body { 
+            background-color: var(--bg-color); 
+            color: var(--text-main); 
+            padding: 2rem 1rem; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
         }
 
-        h1 { font-size: 2.2rem; color: var(--text-main); margin-bottom: 0.5rem; font-weight: 700; }
-        p { color: var(--text-muted); margin-bottom: 2.5rem; }
-
-        .cta-btn {
-            background-color: var(--accent); color: white; border: none; font-weight: 700;
-            padding: 0.75rem 2rem; border-radius: 8px; cursor: pointer; transition: all 0.2s;
-        }
-        .cta-btn:hover { background-color: var(--accent-hover); }
-
-        input, select {
-            background-color: var(--input-bg); border: 1px solid #334155; color: var(--text-main);
-            padding: 0.75rem; border-radius: 8px; font-size: 1rem; width: 100%; max-width: 350px; margin-bottom: 1rem;
+        .form-container {
+            max-width: 550px; 
+            width: 100%; 
+            background-color: var(--card-bg);
+            padding: 2.5rem; 
+            border-radius: 16px; 
+            border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
         }
 
-        /* DATA TABLE STYLE */
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 2rem; text-align: left; }
-        .admin-table th, .admin-table td { padding: 1rem; border-bottom: 1px solid #334155; }
-        .admin-table th { color: var(--accent); font-weight: 700; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 1px; }
-        .admin-table td { color: #e2e8f0; font-size: 0.95rem; }
+        h1 { font-size: 2rem; color: var(--text-main); margin-bottom: 0.5rem; font-weight: 700; text-align: center; }
+        .subtitle { color: var(--text-muted); text-align: center; margin-bottom: 2rem; font-size: 0.95rem; }
+
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
+        label { font-weight: 600; font-size: 0.9rem; color: #e2e8f0; }
         
-        /* ACTION BUTTONS */
-        .action-flex { display: flex; gap: 0.5rem; }
-        .accept-btn {
-            background-color: var(--success); color: white; border: none; padding: 0.5rem 1rem;
-            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+        input, select, textarea {
+            background-color: var(--input-bg); 
+            border: 1px solid #334155; 
+            color: var(--text-main);
+            padding: 0.75rem; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+            width: 100%;
+            transition: border-color 0.2s;
         }
-        .accept-btn:hover { background-color: var(--success-hover); }
-
-        .delete-btn {
-            background-color: var(--danger); color: white; border: none; padding: 0.5rem 1rem;
-            border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s;
-        }
-        .delete-btn:hover { background-color: var(--danger-hover); }
-
-        /* MODAL POPUP BACKGROUND OVERLAY */
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--modal-bg); backdrop-filter: blur(8px);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 2000; display: none; 
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
-        .modal-box {
-            background-color: var(--card-bg); border: 1px solid #334155;
-            padding: 2.5rem; border-radius: 16px; max-width: 500px; width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); text-align: left;
+        textarea { resize: vertical; min-height: 100px; }
+
+        .submit-btn {
+            background-color: var(--accent); 
+            color: white; 
+            border: none; 
+            font-weight: 700;
+            padding: 0.85rem; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            transition: background-color 0.2s;
+            width: 100%;
+            font-size: 1rem;
+            margin-top: 0.5rem;
         }
+        .submit-btn:hover { background-color: var(--accent-hover); }
 
-        .modal-box h2 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--accent); }
-        .modal-box p { font-size: 0.95rem; margin-bottom: 1.5rem; }
-        .modal-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
-        .modal-group label { font-weight: 600; font-size: 0.9rem; }
-        .modal-group input { max-width: 100%; margin-bottom: 0; }
-
-        .modal-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
-        .modal-actions button { flex: 1; padding: 0.75rem; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; }
-
-        .hidden { display: none !important; }
+        #statusMessage {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
-    <div class="admin-container">
-        <h1>Ace Club Data Center</h1>
-        
-        <div id="loginArea">
-            <p>Enter the administrator gateway access token to pull the cloud stream.</p>
-            <input type="password" id="accessCode" placeholder="Enter system password...">
-            <br>
-            <button id="loginBtn" class="cta-btn">Verify Token</button>
-        </div>
+    <div class="form-container">
+        <h1>Ace Club Tutoring</h1>
+        <p class="subtitle">Submit your request and our admin engine will map your session.</p>
 
-        <div id="dashboardArea" class="hidden">
-            <p style="color: #34d399; font-weight: 600; margin-bottom: 2rem;">✓ Security handshake valid. Connection to Firestore collection alive.</p>
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>Student Name</th>
-                        <th>Subject</th>
-                        <th>Topic Details</th>
-                        <th>Availability Given</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="calendarModal" class="modal-overlay">
-        <div class="modal-box">
-            <h2>Process Session Scheduling</h2>
-            <p id="modalSubtext">Configuring timeslots...</p>
-            
-            <p id="aiLog" style="color: var(--ai-blue); font-size: 0.85rem; margin-top: -1rem; margin-bottom: 1.5rem; font-weight: 700;"></p>
-            
-            <div class="modal-group">
-                <label>Set Event Date</label>
-                <input type="date" id="eventDate">
-            </div>
-            <div class="modal-group">
-                <label>Start Time</label>
-                <input type="time" id="startTime">
-            </div>
-            <div class="modal-group">
-                <label>End Time</label>
-                <input type="time" id="endTime">
+        <form id="requestForm">
+            <div class="form-group">
+                <label for="studentName">Your Full Name</label>
+                <input type="text" id="studentName" placeholder="e.g. Alex Morgan" required>
             </div>
 
-            <div class="modal-actions">
-                <button id="govGoogleBtn" style="background-color: var(--success); color: white;">Sync Google Cal</button>
-                <button id="closeModalBtn" style="background-color: #475569; color: white;">Close / Done</button>
+            <div class="form-group">
+                <label for="subjectSelect">Subject Stream</label>
+                <select id="subjectSelect" required>
+                    <option value="" disabled selected>Select a subject...</option>
+                    <option value="Mathematics">Mathematics</option>
+                    <option value="Computer Science">Computer Science</option>
+                    <option value="Data Science">Data Science</option>
+                    <option value="Physics">Physics</option>
+                    <option value="Chemistry">Chemistry</option>
+                </select>
             </div>
-        </div>
+
+            <div class="form-group">
+                <label for="topicDetails">What specific topics do you need help with?</label>
+                <textarea id="topicDetails" placeholder="e.g. Preparing for midterm exam covering derivatives and integration loops..." required></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="availabilityInput">When are you available? (Plain English)</label>
+                <input type="text" id="availabilityInput" placeholder="e.g. monday after 4 pm, tomorrow around 2, next friday at 11am" required>
+            </div>
+
+            <button type="submit" class="submit-btn">Submit Tutoring Request</button>
+        </form>
+
+        <div id="statusMessage"></div>
     </div>
 
     <script>
         // --- PASTE YOUR FIREBASE KEYS HERE ---
         const firebaseConfig = {
-  apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
-  authDomain: "ace-club-portal.firebaseapp.com",
-  projectId: "ace-club-portal",
-  storageBucket: "ace-club-portal.firebasestorage.app",
-  messagingSenderId: "771528519998",
-  appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
-};
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
         // ----------------------------------------------
 
+        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        let activeRecord = null;
+        // Form Submission Handler
+        document.getElementById('requestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        // Gateway Authentication
-        document.getElementById('loginBtn').addEventListener('click', function() {
-            const token = document.getElementById('accessCode').value;
-            if (token === "ACE-admin123") {
-                document.getElementById('loginArea').classList.add('hidden');
-                document.getElementById('dashboardArea').classList.remove('hidden');
-                startLiveStream();
-            } else {
-                alert("Access Denied: Token Invalid.");
-            }
-        });
+            const submitBtn = document.querySelector('.submit-btn');
+            const statusMsg = document.getElementById('statusMessage');
 
-        // Live Cloud Stream Reader
-        function startLiveStream() {
-            db.collection("requests").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                const tableBody = document.getElementById('tableBody');
-                tableBody.innerHTML = ""; 
+            // Collect and Sanitize inputs (Stripping quotes to preserve clean JSON queries)
+            const rawName = document.getElementById('studentName').value;
+            const rawSubject = document.getElementById('subjectSelect').value;
+            const rawDetails = document.getElementById('topicDetails').value;
+            const rawAvailability = document.getElementById('availabilityInput').value;
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const docId = doc.id;
-                    
-                    const safeName = data.name.replace(/['"]/g, "");
-                    const safeSubject = data.subject.replace(/['"]/g, "");
-                    const safeDetails = data.details.replace(/['"]/g, "");
-                    const safeAvail = data.availability.replace(/['"]/g, "");
-                    
-                    const row = `
-                        <tr>
-                            <td><strong>${data.name}</strong></td>
-                            <td><span style="color:#c084fc;">${data.subject}</span></td>
-                            <td>${data.details}</td>
-                            <td><em>${data.availability}</em></td>
-                            <td>
-                                <div class="action-flex">
-                                    <button class="accept-btn" onclick="openApprovalModal('${docId}', '${safeName}', '${safeSubject}', '${safeDetails}', '${safeAvail}')">Accept</button>
-                                    <button class="delete-btn" onclick="deleteRequest('${docId}')">Delete</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                    tableBody.innerHTML += row;
-                });
+            const cleanName = rawName.replace(/['"]/g, "").trim();
+            const cleanSubject = rawSubject.replace(/['"]/g, "").trim();
+            const cleanDetails = rawDetails.replace(/['"]/g, "").trim();
+            const cleanAvailability = rawAvailability.replace(/['"]/g, "").trim();
+
+            // Freeze button UI during flight
+            submitBtn.disabled = true;
+            submitBtn.innerText = "Transmitting to Cloud Stream...";
+            statusMsg.innerText = "";
+
+            // Push object directly to Firestore collection
+            db.collection("requests").add({
+                name: cleanName,
+                subject: cleanSubject,
+                details: cleanDetails,
+                availability: cleanAvailability,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            })
+            .then(() => {
+                // Success Handling
+                statusMsg.style.color = var(--success);
+                statusMsg.innerText = "✓ Request logged successfully! Our team is processing your slot.";
+                document.getElementById('requestForm').reset();
+            })
+            .catch((error) => {
+                // Error Handling
+                console.error("Firestore Upload Exception: ", error);
+                statusMsg.style.color = "#ef4444";
+                statusMsg.innerText = "⚠️ Cloud transaction failed. Please check network connection.";
+            })
+            .finally(() => {
+                // Restore button state
+                submitBtn.disabled = false;
+                submitBtn.innerText = "Submit Tutoring Request";
             });
-        }
-
-        // MODAL CONFIGURATION WITH DETAILED FORCE-MATCHING AUTO-FILL
-        function openApprovalModal(id, name, subject, details, availability) {
-            activeRecord = { id, name, subject, details };
-            
-            document.getElementById('modalSubtext').innerText = `Matching ${name} for ${subject}.\nStudent requested: "${availability}"`;
-            
-            // Clean previous input values completely before processing
-            document.getElementById('eventDate').value = "";
-            document.getElementById('startTime').value = "";
-            document.getElementById('endTime').value = "";
-            document.getElementById('aiLog').innerText = "";
-            
-            // Standardize text scanning variables
-            let cleanedText = availability.toLowerCase().trim();
-            
-            // Fix common typos instantly
-            cleanedText = cleanedText.replace(/\bafert\b/g, "after");
-            cleanedText = cleanedText.replace(/\baftr\b/g, "after");
-            cleanedText = cleanedText.replace(/\bpm\b/g, " pm"); 
-            cleanedText = cleanedText.replace(/\bam\b/g, " am");
-
-            let targetDate = new Date();
-            let hours = "16"; // Default fallback: 4:00 PM (16:00)
-            let minutes = "00";
-            let overrideSuccess = false;
-
-            const weekdaysMap = {
-                "sunday": 0, "monday": 1, "tuesday": 2, "wednesday": 3, 
-                "thursday": 4, "friday": 5, "saturday": 6
-            };
-
-            // SCAN STRING FOR RELATIVE WEEKDAYS
-            for (let dayName in weekdaysMap) {
-                if (cleanedText.includes(dayName)) {
-                    let targetDayIndex = weekdaysMap[dayName];
-                    let currentDayIndex = targetDate.getDay();
-                    
-                    // Calculate relative distance loops to push calendar days forward
-                    let daysToAdd = (targetDayIndex + 7 - currentDayIndex) % 7;
-                    if (daysToAdd === 0) daysToAdd = 7; // If today is Monday, target next Monday
-                    
-                    targetDate.setDate(targetDate.getDate() + daysToAdd);
-                    
-                    // Direct context parser scans for custom hour adjustments
-                    if (cleanedText.includes("1") || cleanedText.includes("1pm")) hours = "13";
-                    if (cleanedText.includes("2") || cleanedText.includes("2pm")) hours = "14";
-                    if (cleanedText.includes("3") || cleanedText.includes("3pm")) hours = "15";
-                    if (cleanedText.includes("4") || cleanedText.includes("4pm")) hours = "16";
-                    if (cleanedText.includes("5") || cleanedText.includes("5pm")) hours = "17";
-                    if (cleanedText.includes("6") || cleanedText.includes("6pm")) hours = "18";
-                    
-                    overrideSuccess = true;
-                    break;
-                }
-            }
-
-            try {
-                if (overrideSuccess) {
-                    // Extract custom date mapping strings
-                    const year = targetDate.getFullYear();
-                    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(targetDate.getDate()).padStart(2, '0');
-                    
-                    const calculatedEndHour = String((parseInt(hours) + 1) % 24).padStart(2, '0');
-
-                    document.getElementById('eventDate').value = `${year}-${month}-${day}`;
-                    document.getElementById('startTime').value = `${hours}:${minutes}`;
-                    document.getElementById('endTime').value = `${calculatedEndHour}:${minutes}`;
-
-                    document.getElementById('aiLog').innerText = "✨ Auto-Fill Engine: Repaired typo, resolved text phrase context, and mapped calendar logs!";
-                } else {
-                    // Standard strict library parsing loop fallback
-                    const parsedTimeline = chrono.parseDate(cleanedText);
-
-                    if (parsedTimeline) {
-                        const trackingDate = new Date(parsedTimeline);
-                        const year = trackingDate.getFullYear();
-                        const month = String(trackingDate.getMonth() + 1).padStart(2, '0');
-                        const day = String(trackingDate.getDate()).padStart(2, '0');
-                        
-                        const libHours = String(trackingDate.getHours()).padStart(2, '0');
-                        const libMin = String(trackingDate.getMinutes()).padStart(2, '0');
-                        const calculatedEndHour = String((parseInt(libHours) + 1) % 24).padStart(2, '0');
-
-                        document.getElementById('eventDate').value = `${year}-${month}-${day}`;
-                        document.getElementById('startTime').value = `${libHours}:${libMin}`;
-                        document.getElementById('endTime').value = `${calculatedEndHour}:${libMin}`;
-
-                        document.getElementById('aiLog').innerText = "✨ Auto-Fill Engine: Extracted absolute timestamp coordinates!";
-                    } else {
-                        document.getElementById('aiLog').innerText = "ℹ️ Auto-Fill Engine: Free format detected. Please fill parameters manually.";
-                    }
-                }
-            } catch (err) {
-                console.warn("Parsing system encountered an exception: ", err);
-                document.getElementById('aiLog').innerText = "ℹ/ Manual configuration fallback active.";
-            }
-
-            // Display modal layer via CSS flex adjustments
-            document.getElementById('calendarModal').style.display = 'flex';
-        }
-
-        // CLOSE MODAL ACTION BUTTON
-        document.getElementById('closeModalBtn').addEventListener('click', function() {
-            document.getElementById('calendarModal').style.display = 'none';
-            activeRecord = null;
         });
-
-        // GOOGLE CALENDAR LINK DISPATCH WITH LOCAL TIME ZONE REMAPPING
-        document.getElementById('govGoogleBtn').addEventListener('click', function() {
-            if (!activeRecord) return;
-
-            const dateInput = document.getElementById('eventDate').value;     
-            const startInput = document.getElementById('startTime').value;   
-            const endInput = document.getElementById('endTime').value;       
-
-            if (!dateInput || !startInput || !endInput) {
-                alert("Please select a Date, Start Time, and End Time first!");
-                return;
-            }
-
-            const cleanDate = dateInput.replace(/-/g, "");
-            const cleanStart = startInput.replace(/:/g, "");
-            const cleanEnd = endInput.replace(/:/g, "");
-
-            // Dropping trailing UTC symbols forces Google to respect your native time zone settings
-            const startTimeline = `${cleanDate}T${cleanStart}00`;
-            const endTimeline = `${cleanDate}T${cleanEnd}00`;
-
-            const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
-            const title = encodeURIComponent(`[Ace Club] ${activeRecord.subject} Tutoring with ${activeRecord.name}`);
-            const textDetails = encodeURIComponent(`Topic Details: ${activeRecord.details}`);
-            
-            const fullUrl = `${baseUrl}&text=${title}&dates=${startTimeline}/${endTimeline}&details=${textDetails}`;
-            
-            window.open(fullUrl, "_blank");
-        });
-
-        // Direct Table Row Deletion
-        function deleteRequest(id) {
-            if (confirm("Permanently wipe this record from database queue?")) {
-                db.collection("requests").doc(id).delete();
-            }
-        }
     </script>
 </body>
 </html>
