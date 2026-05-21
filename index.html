@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>The Ace Club Portal</title>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
     <style>
         :root {
             --bg-color: #0f172a;
@@ -16,85 +19,38 @@
             --nav-bg: rgba(15, 23, 42, 0.9);
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        }
-
-        html {
-            scroll-behavior: smooth;
-        }
-
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            line-height: 1.6;
-            padding-top: 70px; /* Prevents sticky nav from covering content */
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+        html { scroll-behavior: smooth; }
+        body { background-color: var(--bg-color); color: var(--text-main); line-height: 1.6; padding-top: 70px; }
 
         /* --- STICKY NAVIGATION BAR --- */
         nav {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 70px;
-            background-color: var(--nav-bg);
-            backdrop-filter: blur(10px); /* Modern blurred glass effect */
-            border-bottom: 1px solid #334155;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 2rem;
-            z-index: 1000;
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px;
+            background-color: var(--nav-bg); backdrop-filter: blur(10px);
+            border-bottom: 1px solid #334155; display: flex;
+            justify-content: space-between; align-items: center; padding: 0 2rem; z-index: 1000;
         }
-
-        .nav-logo {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: var(--accent);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            text-decoration: none;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-            list-style: none;
-        }
-
-        .nav-links a {
-            color: var(--text-muted);
-            text-decoration: none;
-            font-weight: 600;
-            font-size: 1rem;
-            transition: color 0.2s ease;
-        }
-
-        .nav-links a:hover {
-            color: var(--accent);
-        }
+        .nav-logo { font-size: 1.5rem; font-weight: 800; color: var(--accent); text-decoration: none; text-transform: uppercase; letter-spacing: 1px; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { color: var(--text-muted); text-decoration: none; font-weight: 600; font-size: 1rem; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--accent); }
 
         /* --- FULL PAGE SECTIONS & ANIMATIONS --- */
-        section {
-            min-height: calc(100vh - 70px);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 4rem 2rem;
+        section { 
+            min-height: calc(100vh - 70px); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            padding: 4rem 2rem; 
             border-bottom: 1px solid #1e293b;
             opacity: 0;
             transform: translateY(40px);
             animation: fadeInUp 0.8s ease forwards;
         }
 
-        /* Delays section animations so they cascade nicely */
         #home { animation-delay: 0.1s; }
-        #about { animation-delay: 0.3s; }
-        #request { animation-delay: 0.5s; }
+        #about { animation-delay: 0.2s; }
+        #request { animation-delay: 0.3s; }
 
         @keyframes fadeInUp {
             to {
@@ -104,96 +60,34 @@
         }
 
         .container {
-            max-width: 700px;
-            width: 100%;
-            background-color: var(--card-bg);
-            padding: 3rem 2rem;
-            border-radius: 16px;
-            border: 1px solid #334155;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
-            text-align: center;
+            max-width: 700px; width: 100%; background-color: var(--card-bg);
+            padding: 3rem 2rem; border-radius: 16px; border: 1px solid #334155;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3); text-align: center;
         }
 
-        /* --- SECTION SPECIFIC STYLES --- */
-        .logo-large {
-            font-size: 3.5rem;
-            font-weight: 800;
-            color: var(--accent);
-            margin-bottom: 1rem;
-            letter-spacing: 2px;
-        }
-
-        h1 {
-            font-size: 2.2rem;
-            font-weight: 700;
-            margin-bottom: 1.5rem;
-        }
-
-        p {
-            color: var(--text-muted);
-            font-size: 1.1rem;
-            margin-bottom: 2rem;
-        }
-
+        .logo-large { font-size: 3.5rem; font-weight: 800; color: var(--accent); margin-bottom: 1rem; letter-spacing: 2px; }
+        h1 { font-size: 2.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+        p { color: var(--text-muted); font-size: 1.1rem; margin-bottom: 2rem; }
+        
         .cta-btn {
-            display: inline-block;
-            background-color: var(--accent);
-            color: #0f172a;
-            text-decoration: none;
-            font-weight: 700;
-            font-size: 1.2rem;
-            padding: 1rem 2.5rem;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 14px rgba(56, 189, 248, 0.3);
+            display: inline-block; background-color: var(--accent); color: #0f172a;
+            text-decoration: none; font-weight: 700; padding: 1rem 2.5rem;
+            border-radius: 8px; transition: all 0.2s; border: none; cursor: pointer; font-size: 1.1rem;
         }
+        .cta-btn:hover { background-color: var(--accent-hover); transform: translateY(-2px); }
 
-        .cta-btn:hover {
-            background-color: var(--accent-hover);
-            transform: translateY(-2px);
-        }
-
-        /* Form Alignments */
-        form {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            text-align: left;
-        }
-
-        .form-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        label {
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-
+        /* Form Styling */
+        form { display: flex; flex-direction: column; gap: 1.25rem; text-align: left; }
+        .form-group { display: flex; flex-direction: column; gap: 0.5rem; }
+        label { font-weight: 600; font-size: 0.95rem; }
         input, select, textarea {
-            background-color: var(--input-bg);
-            border: 1px solid #334155;
-            color: var(--text-main);
-            padding: 0.75rem;
-            border-radius: 8px;
-            font-size: 1rem;
-            width: 100%;
+            background-color: var(--input-bg); border: 1px solid #334155;
+            color: var(--text-main); padding: 0.75rem; border-radius: 8px; width: 100%; font-size: 1rem;
         }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+        textarea { resize: vertical; min-height: 100px; }
 
-        input:focus, select:focus, textarea:focus {
-            outline: 2px solid var(--accent);
-            border-color: transparent;
-        }
-
-        footer {
-            padding: 2rem 0;
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            background-color: #0b111e;
-        }
+        footer { padding: 2rem 0; text-align: center; font-size: 0.85rem; color: var(--text-muted); background-color: #0b111e; }
     </style>
 </head>
 <body>
@@ -220,14 +114,14 @@
         <div class="container">
             <h1>About Our Mission</h1>
             <p>The Ace Club was founded to provide accessible, efficient, high-tier tutoring and resource sharing for students navigating intense courses. By setting high standards of collaboration, we optimize academic performance and community involvement.</p>
-            <p style="margin-bottom: 0;">Our network runs entirely on modern digital tools, ensuring no student request goes unanswered, and every study session is precisely tracked.</p>
+            <p style="margin-bottom: 0;">Our network runs entirely on modern digital tools, ensuring no student request goes unanswered, and every study session is precisely tracked via our serverless architecture.</p>
         </div>
     </section>
 
     <section id="request">
         <div class="container">
             <h1>Request a Tutoring Session</h1>
-            <p>Fill out your details to generate your structured request package.</p>
+            <p>Data entered below is directly transmitted to our secure tutor database queue.</p>
             
             <form id="portalForm">
                 <div class="form-group">
@@ -239,16 +133,16 @@
                     <label for="subject">Subject Needed</label>
                     <select id="subject" required>
                         <option value="" disabled selected>Select a subject...</option>
-                        <option value="Mathematics">Mathematics (Calculus/Stats)</option>
-                        <option value="Sciences">Sciences (Chemistry/Physics/Biology)</option>
-                        <option value="Computer Science">Computer Science (Python/Java/Web Dev)</option>
-                        <option value="English & Writing">English & Writing Composition</option>
+                        <option value="Mathematics">Mathematics</option>
+                        <option value="Sciences">Sciences</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="English & Writing">English & Writing</option>
                     </select>
                 </div>
 
                 <div class="form-group">
                     <label for="details">Specific Topic or Assignment Details</label>
-                    <textarea id="details" placeholder="What are you currently working on?" required></textarea>
+                    <textarea id="details" placeholder="What concepts do you need assistance with?" required></textarea>
                 </div>
 
                 <div class="form-group">
@@ -256,7 +150,7 @@
                     <input type="text" id="availability" placeholder="e.g., Mondays after 4:00 PM" required>
                 </div>
 
-                <button type="submit" class="cta-btn" style="border:none; cursor:pointer; width:100%;">Generate Request Packet</button>
+                <button type="submit" class="cta-btn" style="width:100%;">Transmit to Database</button>
             </form>
         </div>
     </section>
@@ -266,24 +160,39 @@
     </footer>
 
     <script>
+        // --- PASTE YOUR FIREBASE KEYS HERE ---
+        const firebaseConfig = {
+  apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
+  authDomain: "ace-club-portal.firebaseapp.com",
+  projectId: "ace-club-portal",
+  storageBucket: "ace-club-portal.firebasestorage.app",
+  messagingSenderId: "771528519998",
+  appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
+};
+        // -------------------------------------
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         document.getElementById('portalForm').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const name = document.getElementById('studentName').value;
-            const subject = document.getElementById('subject').value;
-            const details = document.getElementById('details').value;
-            const availability = document.getElementById('availability').value;
-            
-            const messageBlock = `--- ACE CLUB REQUEST ---\nStudent: ${name}\nSubject: ${subject}\nDetails: ${details}\nAvailability: ${availability}\n------------------------`;
-            
-            navigator.clipboard.writeText(messageBlock).then(() => {
-                alert("Request info formatted and copied to clipboard! Opening Discord server now...");
-                window.open("https://discord.gg/NUdUuqc9", "_blank");
+            const studentData = {
+                name: document.getElementById('studentName').value,
+                subject: document.getElementById('subject').value,
+                details: document.getElementById('details').value,
+                availability: document.getElementById('availability').value,
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            };
+
+            db.collection("requests").add(studentData).then(() => {
+                alert("Data securely dispatched to cloud database queue!");
+                document.getElementById('portalForm').reset();
             }).catch(err => {
-                alert("Form complete! Please copy your request details and drop them in the Discord ticket.");
+                console.error("Database Error: ", err);
+                alert("Database error encountered during transmission.");
             });
         });
     </script>
-
 </body>
 </html>
