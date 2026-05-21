@@ -20,7 +20,6 @@
             --nav-bg: rgba(11, 15, 25, 0.85);
         }
 
-        /* Smooth scrolling behavior for navigation clicks */
         html {
             scroll-behavior: smooth;
         }
@@ -36,10 +35,9 @@
             background-color: var(--bg-color); 
             color: var(--text-main); 
             min-height: 100vh;
-            padding-top: 80px; /* Space so sticky navbar doesn't block content */
+            padding-top: 80px;
         }
 
-        /* --- STICKY NAVIGATION BAR --- */
         .navbar {
             position: fixed;
             top: 0;
@@ -97,7 +95,6 @@
             background-color: var(--accent-hover);
         }
 
-        /* --- SECTION BASE UI --- */
         section {
             padding: 6rem 2rem;
             display: flex;
@@ -113,7 +110,6 @@
             width: 100%;
         }
 
-        /* --- 1. HERO SECTION --- */
         .hero-section {
             min-height: calc(85vh - 80px);
             padding-top: 2rem;
@@ -169,7 +165,6 @@
         .cta-btn:hover { background-color: var(--accent-hover); }
         .cta-btn:active { transform: scale(0.98); }
 
-        /* --- 2. ABOUT US SECTION --- */
         .about-section {
             background-color: #0f172a;
             border-top: 1px solid #1e293b;
@@ -234,7 +229,6 @@
             line-height: 1.5;
         }
 
-        /* --- 3. REQUEST FORM SECTION --- */
         .form-section {
             background-color: var(--bg-color);
         }
@@ -327,7 +321,6 @@
             font-weight: 600;
         }
 
-        /* RESPONSIVE LAYOUT SCALING */
         @media (max-width: 868px) {
             .navbar { padding: 0 1.5rem; }
             .nav-links a:not(.nav-btn) { display: none; } 
@@ -396,7 +389,12 @@
                         <input type="text" id="studentName" placeholder="e.g. Alex Morgan" required>
                     </div>
 
-                    <div class="nav-links"></div> <div class="form-group">
+                    <div class="form-group">
+                        <label for="studentEmail">Email Address</label>
+                        <input type="email" id="studentEmail" placeholder="e.g. alex@example.com" required>
+                    </div>
+
+                    <div class="form-group">
                         <label for="subjectSelect">Subject Stream</label>
                         <select id="subjectSelect" required>
                             <option value="" disabled selected>Select your course track...</option>
@@ -427,22 +425,18 @@
     </section>
 
     <script>
-        // --- PASTE YOUR FIREBASE KEYS HERE ---
         const firebaseConfig = {
-  apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
-  authDomain: "ace-club-portal.firebaseapp.com",
-  projectId: "ace-club-portal",
-  storageBucket: "ace-club-portal.firebasestorage.app",
-  messagingSenderId: "771528519998",
-  appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
-};
-        // ----------------------------------------------
+            apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
+            authDomain: "ace-club-portal.firebaseapp.com",
+            projectId: "ace-club-portal",
+            storageBucket: "ace-club-portal.firebasestorage.app",
+            messagingSenderId: "771528519998",
+            appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
+        };
 
-        // Initialize Firebase
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // Form Handler
         document.getElementById('requestForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -450,11 +444,13 @@
             const statusMsg = document.getElementById('statusMessage');
 
             const rawName = document.getElementById('studentName').value;
+            const rawEmail = document.getElementById('studentEmail').value;
             const rawSubject = document.getElementById('subjectSelect').value;
             const rawDetails = document.getElementById('topicDetails').value;
             const rawAvailability = document.getElementById('availabilityInput').value;
 
             const cleanName = rawName.replace(/['"]/g, "").trim();
+            const cleanEmail = rawEmail.replace(/['"]/g, "").trim();
             const cleanSubject = rawSubject.replace(/['"]/g, "").trim();
             const cleanDetails = rawDetails.replace(/['"]/g, "").trim();
             const cleanAvailability = rawAvailability.replace(/['"]/g, "").trim();
@@ -465,6 +461,7 @@
 
             db.collection("requests").add({
                 name: cleanName,
+                email: cleanEmail,
                 subject: cleanSubject,
                 details: cleanDetails,
                 availability: cleanAvailability,
