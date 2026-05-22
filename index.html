@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ace Club - Excel Your Learning</title>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
     <style>
         :root {
@@ -435,7 +435,7 @@
                     <p>Move past raw memorization. Our tutoring methods emphasize fundamental logic loops and problem-solving framework building.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon"></div>
+                    <div class="feature-icon">✓</div>
                     <h3>Proven Results Track</h3>
                     <p>Get comprehensive support built to optimize exam preparation, clear homework bottlenecks, and elevate grade averages consistently.</p>
                 </div>
@@ -449,7 +449,7 @@
                 <h2>Request a Session</h2>
                 <p class="form-subtitle">Submit your requirements to register your timeline data in our stream ledger.</p>
 
-                <form id="requestForm">
+                <form id="requestForm" onsubmit="return false;">
                     <div class="form-group">
                         <label for="studentName">Your Full Name</label>
                         <input type="text" id="studentName" placeholder="e.g. Alex Morgan" required>
@@ -482,7 +482,7 @@
                         <input type="text" id="availabilityInput" placeholder="e.g. monday after 4 pm, tomorrow around 2" required>
                     </div>
 
-                    <button type="submit" class="submit-btn">Submit Session Request</button>
+                    <button type="button" id="submitBtn" class="submit-btn" onclick="executeDataTransmission()">Submit Session Request</button>
                 </form>
 
                 <div id="statusMessage"></div>
@@ -504,45 +504,45 @@
     </footer>
 
     <script>
-        // Placeholders automatically handled by Vercel deployment engine
         const firebaseConfig = {
-            apiKey: "%%FIREBASE_API_KEY%%",
-            authDomain: "%%FIREBASE_AUTH_DOMAIN%%",
-            projectId: "%%FIREBASE_PROJECT_ID%%",
-            storageBucket: "%%FIREBASE_STORAGE_BUCKET%%",
-            messagingSenderId: "%%FIREBASE_MESSAGING_SENDER_ID%%",
-            appId: "%%FIREBASE_APP_ID%%"
+            apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
+            authDomain: "ace-club-portal.firebaseapp.com",
+            projectId: "ace-club-portal",
+            storageBucket: "ace-club-portal.firebasestorage.app",
+            messagingSenderId: "771528519998",
+            appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
         };
 
+        // Initialize Native Architecture
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        document.getElementById('requestForm').addEventListener('submit', function(e) {
-            // Absolute native submission preventions to avoid early page reloads
-            e.preventDefault();
-            e.stopPropagation();
-
-            const submitBtn = document.querySelector('.submit-btn');
+        // Execution engine triggered directly on element click to completely bypass native reloads
+        function executeDataTransmission() {
+            const btn = document.getElementById('submitBtn');
             const statusMsg = document.getElementById('statusMessage');
 
-            submitBtn.disabled = true;
-            submitBtn.innerText = "Transmitting to Cloud Queue...";
+            // Set states immediately to let you see the button react
+            btn.disabled = true;
+            btn.innerText = "Transmitting to Cloud Queue...";
             statusMsg.style.color = "#a855f7";
             statusMsg.innerText = "Connecting to pipeline database...";
 
             try {
-                const rawName = document.getElementById('studentName').value;
-                const rawEmail = document.getElementById('studentEmail').value;
-                const rawSubject = document.getElementById('subjectSelect').value;
-                const rawDetails = document.getElementById('topicDetails').value;
-                const rawAvailability = document.getElementById('availabilityInput').value;
+                const nameVal = document.getElementById('studentName').value;
+                const emailVal = document.getElementById('studentEmail').value;
+                const subjectVal = document.getElementById('subjectSelect').value;
+                const detailsVal = document.getElementById('topicDetails').value;
+                const availabilityVal = document.getElementById('availabilityInput').value;
 
-                const cleanName = rawName.replace(/['"]/g, "").trim();
-                const cleanEmail = rawEmail.replace(/['"]/g, "").trim();
-                const cleanSubject = rawSubject.replace(/['"]/g, "").trim();
-                const cleanDetails = rawDetails.replace(/['"]/g, "").trim();
-                const cleanAvailability = rawAvailability.replace(/['"]/g, "").trim();
+                // Validate matching fields are parsed out
+                const cleanName = nameVal.replace(/['"]/g, "").trim();
+                const cleanEmail = emailVal.replace(/['"]/g, "").trim();
+                const cleanSubject = subjectVal.replace(/['"]/g, "").trim();
+                const cleanDetails = detailsVal.replace(/['"]/g, "").trim();
+                const cleanAvailability = availabilityVal.replace(/['"]/g, "").trim();
 
+                // Fire transaction straight to Firestore requests database collection
                 db.collection("requests").add({
                     name: cleanName,
                     email: cleanEmail,
@@ -557,24 +557,22 @@
                     document.getElementById('requestForm').reset();
                 })
                 .catch((error) => {
-                    console.error("Cloud Write Exception: ", error);
-                    alert("Firebase Database Rejection: " + error.message);
+                    console.error("Firebase Sync Failure:", error);
                     statusMsg.style.color = "#ef4444"; 
-                    statusMsg.innerText = "⚠️ Gateway transaction timeout.";
+                    statusMsg.innerText = "⚠️ Network Write Rejection: " + error.message;
                 })
                 .finally(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = "Submit Session Request";
+                    btn.disabled = false;
+                    btn.innerText = "Submit Session Request";
                 });
 
-            } catch (jsError) {
-                console.error("Local Runtime Field Extraction Exception: ", jsError);
-                alert("Form Execution Error: " + jsError.message);
-                submitBtn.disabled = false;
-                submitBtn.innerText = "Submit Session Request";
-                statusMsg.innerText = "";
+            } catch (err) {
+                console.error("Local Document Context Exception:", err);
+                alert("Form Alignment Error: " + err.message);
+                btn.disabled = false;
+                btn.innerText = "Submit Session Request";
             }
-        });
+        }
     </script>
 </body>
 </html>
