@@ -415,18 +415,19 @@
     </div>
 
     <script>
+        // Config injected straight from your source database parameters
         const firebaseConfig = {
-    apiKey: "FIREBASE_API_KEY",
-    authDomain: "FIREBASE_AUTH_DOMAIN",
-    projectId: "FIREBASE_PROJECT_ID",
-    storageBucket: "FIREBASE_STORAGE_BUCKET",
-    messagingSenderId: "FIREBASE_MESSAGING_SENDER_ID",
-    appId: "FIREBASE_APP_ID"
-};
+            apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
+            authDomain: "ace-club-portal.firebaseapp.com",
+            projectId: "ace-club-portal",
+            storageBucket: "ace-club-portal.firebasestorage.app",
+            messagingSenderId: "771528519998",
+            appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
+        };
 
-// Initialize Firebase
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
         let activeRecord = null;
 
@@ -474,7 +475,6 @@ const db = firebase.firestore();
                         dateString = jsDate.toLocaleDateString() + ' @ ' + jsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                     }
 
-                    // Properly format parameters for the inline function call
                     const onClickParams = `openApprovalModal('${requestId}', '${safeName.replace(/'/g, "\\'")}', '${safeEmail.replace(/'/g, "\\'")}', '${safeSubject.replace(/'/g, "\\'")}', '${safeDetails.replace(/'/g, "\\'")}', '${safeAvail.replace(/'/g, "\\'")}')`;
 
                     const cardHTML = `
@@ -521,7 +521,8 @@ const db = firebase.firestore();
             });
         }
 
-        function openApprovalModal(id, name, email, subject, details, availability) {
+        // Exposed functions explicitly attached to the global window scope so dynamic elements find them
+        window.openApprovalModal = function(id, name, email, subject, details, availability) {
             activeRecord = { id, name, email, subject, details };
             
             document.getElementById('modalSubtext').innerText = `Matching ${name} (${email || 'No email collected'}) for ${subject}.\nStudent requested: "${availability}"`;
@@ -603,7 +604,13 @@ const db = firebase.firestore();
             }
 
             document.getElementById('calendarModal').style.display = 'flex';
-        }
+        };
+
+        window.deleteRequest = function(id) {
+            if (confirm("Permanently wipe this record from database queue?")) {
+                db.collection("requests").doc(id).delete();
+            }
+        };
 
         document.getElementById('closeModalBtn').addEventListener('click', function() {
             document.getElementById('calendarModal').style.display = 'none';
@@ -641,7 +648,6 @@ const db = firebase.firestore();
             window.open(fullUrl, "_blank");
         });
 
-        // Web Gmail Direct Injection Engine
         document.getElementById('sendEmailBtn').addEventListener('click', function() {
             if (!activeRecord) return;
             if (!activeRecord.email) {
@@ -695,12 +701,6 @@ Ace Club Administration`;
 
             window.open(gmailWebUrl, '_blank');
         });
-
-        function deleteRequest(id) {
-            if (confirm("Permanently wipe this record from database queue?")) {
-                db.collection("requests").doc(id).delete();
-            }
-        }
     </script>
 </body>
 </html>
