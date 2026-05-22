@@ -415,23 +415,26 @@
     </div>
 
     <script>
-        // When a user submits a tutoring request form
-async function handleFormSubmit(formData) {
+        // Call this function when your admin page loads
+async function loadAdminRequests() {
   try {
-    const response = await fetch('https://ace-club-backend.onrender.com/submit-request', {
-      method: 'POST',
+    // 1. Fetch data from your secret backend locker
+    const response = await fetch('https://ace-club-backend.onrender.com/get-requests', {
+      method: 'GET',
       headers: {
         'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(formData)
+        // If you set up authentication, you will pass your login token here later
+      }
     });
+
+    const requests = await response.json();
     
-    const result = await response.json();
-    if (result.success) {
-      alert("Application sent securely!");
-    }
+    // 2. Loop through the requests and display them on your dashboard
+    console.log("Here is your tutoring data:", requests);
+    // (Insert your existing UI rendering loop logic here to display them on the screen)
+
   } catch (error) {
-    console.error("Submission failed:", error);
+    console.error("Failed to load admin data:", error);
   }
 }
 
