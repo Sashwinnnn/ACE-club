@@ -416,13 +416,19 @@
 
     <script>
         const firebaseConfig = {
-    apiKey: "VERCEL_API_KEY",
-    authDomain: "VERCEL_AUTH_DOMAIN",
-    projectId: "VERCEL_PROJECT_ID",
-    storageBucket: "VERCEL_STORAGE_BUCKET",
-    messagingSenderId: "VERCEL_MESSAGING_SENDER_ID",
-    appId: "VERCEL_APP_ID"
-};
+            apiKey: "VERCEL_API_KEY",
+            authDomain: "VERCEL_AUTH_DOMAIN",
+            projectId: "VERCEL_PROJECT_ID",
+            storageBucket: "VERCEL_STORAGE_BUCKET",
+            messagingSenderId: "VERCEL_MESSAGING_SENDER_ID",
+            appId: "VERCEL_APP_ID"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // Define 'db' so your functions can actually read and write to Firestore
+        const db = firebase.firestore();
 
         let activeRecord = null;
 
