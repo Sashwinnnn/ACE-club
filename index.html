@@ -322,9 +322,9 @@
             margin-top: 1.5rem;
             font-size: 1rem;
             font-weight: 600;
+            min-height: 24px;
         }
 
-        /* High-End Aesthetic Footer Styles */
         .admin-footer {
             margin-top: auto;
             width: 100%;
@@ -351,14 +351,7 @@
             gap: 1rem;
         }
 
-        .footer-left {
-            color: var(--text-muted);
-            font-size: 0.85rem;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-
-        .footer-right {
+        .footer-left, .footer-right {
             color: var(--text-muted);
             font-size: 0.85rem;
             font-weight: 500;
@@ -442,7 +435,7 @@
                     <p>Move past raw memorization. Our tutoring methods emphasize fundamental logic loops and problem-solving framework building.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="feature-icon">✓</div>
+                    <div class="feature-icon"></div>
                     <h3>Proven Results Track</h3>
                     <p>Get comprehensive support built to optimize exam preparation, clear homework bottlenecks, and elevate grade averages consistently.</p>
                 </div>
@@ -511,63 +504,76 @@
     </footer>
 
     <script>
-        // Placed inside template strings to prevent double-quoting syntax breaks
+        // Synchronized direct config object matching the admin infrastructure
         const firebaseConfig = {
-            apiKey: `AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc`,
-            authDomain: `ace-club-portal.firebaseapp.com`,
-            projectId: `ace-club-portal`,
-            storageBucket: `ace-club-portal.firebasestorage.app`,
-            messagingSenderId: `771528519998`,
-            appId: `1:771528519998:web:044863e838b2f7d23e3c6f`
+            apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
+            authDomain: "ace-club-portal.firebaseapp.com",
+            projectId: "ace-club-portal",
+            storageBucket: "ace-club-portal.firebasestorage.app",
+            messagingSenderId: "771528519998",
+            appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         document.getElementById('requestForm').addEventListener('submit', function(e) {
+            // Absolute native submission preventions to avoid early page reloads
             e.preventDefault();
+            e.stopPropagation();
 
             const submitBtn = document.querySelector('.submit-btn');
             const statusMsg = document.getElementById('statusMessage');
 
-            const rawName = document.getElementById('studentName').value;
-            const rawEmail = document.getElementById('studentEmail').value;
-            const rawSubject = document.getElementById('subjectSelect').value;
-            const rawDetails = document.getElementById('topicDetails').value;
-            const rawAvailability = document.getElementById('availabilityInput').value;
-
-            const cleanName = rawName.replace(/['"]/g, "").trim();
-            const cleanEmail = rawEmail.replace(/['"]/g, "").trim();
-            const cleanSubject = rawSubject.replace(/['"]/g, "").trim();
-            const cleanDetails = rawDetails.replace(/['"]/g, "").trim();
-            const cleanAvailability = rawAvailability.replace(/['"]/g, "").trim();
-
             submitBtn.disabled = true;
             submitBtn.innerText = "Transmitting to Cloud Queue...";
-            statusMsg.innerText = "";
+            statusMsg.style.color = "#a855f7";
+            statusMsg.innerText = "Connecting to pipeline database...";
 
-            db.collection("requests").add({
-                name: cleanName,
-                email: cleanEmail,
-                subject: cleanSubject,
-                details: cleanDetails,
-                availability: cleanAvailability,
-                timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            })
-            .then(() => {
-                statusMsg.style.color = "#10b981"; 
-                statusMsg.innerText = "✓ Request logged successfully!";
-                document.getElementById('requestForm').reset();
-            })
-            .catch((error) => {
-                console.error("Cloud Write Exception: ", error);
-                statusMsg.style.color = "#ef4444"; 
-                statusMsg.innerText = "⚠️ Gateway transaction timeout. Please check your data connection.";
-            })
-            .finally(() => {
+            try {
+                const rawName = document.getElementById('studentName').value;
+                const rawEmail = document.getElementById('studentEmail').value;
+                const rawSubject = document.getElementById('subjectSelect').value;
+                const rawDetails = document.getElementById('topicDetails').value;
+                const rawAvailability = document.getElementById('availabilityInput').value;
+
+                const cleanName = rawName.replace(/['"]/g, "").trim();
+                const cleanEmail = rawEmail.replace(/['"]/g, "").trim();
+                const cleanSubject = rawSubject.replace(/['"]/g, "").trim();
+                const cleanDetails = rawDetails.replace(/['"]/g, "").trim();
+                const cleanAvailability = rawAvailability.replace(/['"]/g, "").trim();
+
+                db.collection("requests").add({
+                    name: cleanName,
+                    email: cleanEmail,
+                    subject: cleanSubject,
+                    details: cleanDetails,
+                    availability: cleanAvailability,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                })
+                .then(() => {
+                    statusMsg.style.color = "#10b981"; 
+                    statusMsg.innerText = "✓ Request logged successfully!";
+                    document.getElementById('requestForm').reset();
+                })
+                .catch((error) => {
+                    console.error("Cloud Write Exception: ", error);
+                    alert("Firebase Database Rejection: " + error.message);
+                    statusMsg.style.color = "#ef4444"; 
+                    statusMsg.innerText = "⚠️ Gateway transaction timeout.";
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerText = "Submit Session Request";
+                });
+
+            } catch (jsError) {
+                console.error("Local Runtime Field Extraction Exception: ", jsError);
+                alert("Form Execution Error: " + jsError.message);
                 submitBtn.disabled = false;
                 submitBtn.innerText = "Submit Session Request";
-            });
+                statusMsg.innerText = "";
+            }
         });
     </script>
 </body>
