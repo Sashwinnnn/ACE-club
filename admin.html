@@ -4,700 +4,643 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ace Club - Admin Ledger</title>
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chrono-node@2.4.12/dist/chrono.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chrono-node/2.4.12/chrono.min.js"></script>
 
     <style>
         :root {
-            --bg-color: #0b0f19;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --accent: #a855f7; 
+            --bg-color: #070a13;
+            --card-bg: #111827;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --accent: #a855f7;
             --accent-hover: #9333ea;
-            --input-bg: #0f172a;
-            --success: #10b981;
-            --success-hover: #059669;
+            --input-bg: #1f2937;
             --danger: #ef4444;
             --danger-hover: #dc2626;
-            --nav-bg: rgba(11, 15, 25, 0.85);
-            --modal-bg: rgba(11, 15, 25, 0.9);
-            --ai-blue: #38bdf8;
-            --email-blue: #0284c7;
-            --email-blue-hover: #0369a1;
+            --success: #10b981;
+            --success-hover: #059669;
+            --border-color: #374151;
         }
 
-        * { 
-            margin: 0; 
-            padding: 0; 
-            box-sizing: border-box; 
-            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif; 
+        html {
+            height: 100%;
         }
-        
-        body { 
-            background-color: var(--bg-color); 
-            color: var(--text-main); 
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
             min-height: 100vh;
-            padding-top: 100px; 
-            padding-bottom: 4rem;
+            display: flex;
+            flex-direction: column;
+            padding: 2rem;
         }
 
-        .navbar {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .header {
+            max-width: 1400px;
             width: 100%;
-            height: 80px;
-            background-color: var(--nav-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid #334155;
+            margin: 0 auto 2rem auto;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 0 3rem;
-            z-index: 5000;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1.5rem;
         }
 
-        .nav-logo {
+        .header h1 {
+            font-size: 1.75rem;
             font-weight: 800;
-            font-size: 1.3rem;
-            color: var(--text-main);
-            letter-spacing: 0.5px;
+            letter-spacing: -0.5px;
         }
 
-        .nav-logo span {
+        .header h1 span {
             color: var(--accent);
         }
 
-        .badge {
-            background: rgba(168, 85, 247, 0.15);
-            color: var(--accent);
-            padding: 0.4rem 1rem;
-            border-radius: 50px;
-            font-weight: 700;
-            font-size: 0.85rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            border: 1px solid rgba(168, 85, 247, 0.3);
-        }
-
-        .container {
-            max-width: 1200px;
-            width: 100%;
-            margin: 0 auto;
-            padding: 0 2rem;
-            text-align: center;
+        /* Gate Access Gateway Card Layout */
+        .login-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .login-card {
             background-color: var(--card-bg);
-            border: 1px solid #334155;
+            border: 1px solid var(--border-color);
+            padding: 3rem;
             border-radius: 20px;
-            padding: 3.5rem 2.5rem;
-            max-width: 500px;
+            max-width: 420px;
             width: 100%;
-            margin: 4rem auto 0 auto;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);
         }
 
         .login-card h2 {
-            font-size: 1.8rem;
-            font-weight: 800;
-            margin-bottom: 0.5rem;
-            background: linear-gradient(to right, #f8fafc, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.75rem;
+            font-size: 1.5rem;
         }
 
         .login-card p {
             color: var(--text-muted);
+            font-size: 0.9rem;
             margin-bottom: 2rem;
-            font-size: 0.95rem;
         }
 
-        input, select {
-            background-color: var(--input-bg); 
-            border: 1px solid #334155; 
-            color: var(--text-main);
-            padding: 0.85rem 1.25rem; 
-            border-radius: 10px; 
-            font-size: 1rem; 
-            width: 100%; 
-            max-width: 350px; 
-            margin-bottom: 1.25rem;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        input:focus {
-            border-color: var(--accent);
-        }
-
-        .cta-btn {
-            background-color: var(--accent); 
-            color: white; 
-            border: none; 
-            font-weight: 700;
-            padding: 0.85rem 2.5rem; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            transition: background-color 0.2s;
-        }
-        .cta-btn:hover { background-color: var(--accent-hover); }
-
-        header {
-            margin-bottom: 3rem;
-            text-align: left;
-        }
-
-        header h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(to right, #f8fafc, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
-
-        header p {
-            color: var(--text-muted);
-            font-size: 1.05rem;
-        }
-
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        .dashboard-container {
+            display: none;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            grid-template-columns: 1fr 450px;
             gap: 2rem;
+            flex: 1;
+        }
+
+        /* Requests Grid Configuration */
+        .requests-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
         }
 
         .request-card {
             background-color: var(--card-bg);
-            border: 1px solid #334155;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            gap: 1rem;
+            transition: border-color 0.2s, transform 0.2s;
             position: relative;
-            overflow: hidden;
-            transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), border-color 0.25s, box-shadow 0.25s;
         }
 
         .request-card:hover {
-            transform: translateY(-8px) scale(1.01);
-            border-color: var(--accent);
-            box-shadow: 0 20px 30px -10px rgba(168, 85, 247, 0.25);
+            border-color: #4b5563;
+            transform: translateY(-2px);
         }
 
-        .subject-tag {
-            position: absolute;
-            top: 0;
-            right: 2rem;
-            background-color: var(--input-bg);
-            border: 1px solid #334155;
-            border-top: none;
-            color: #c084fc;
-            padding: 0.5rem 1rem;
-            font-size: 0.8rem;
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .student-info h3 {
+            font-size: 1.15rem;
             font-weight: 700;
-            border-bottom-left-radius: 10px;
-            border-bottom-right-radius: 10px;
-            letter-spacing: 0.5px;
+            color: #ffffff;
+            margin-bottom: 0.25rem;
         }
 
-        .student-name {
-            font-size: 1.4rem;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 1.25rem;
-            margin-top: 0.5rem;
-            padding-right: 6rem;
-            text-align: left;
-        }
-
-        .info-block {
-            background-color: var(--input-bg);
-            border: 1px solid #233149;
-            padding: 1rem;
-            border-radius: 12px;
-            margin-bottom: 1rem;
-            text-align: left;
-        }
-
-        .info-label {
-            font-size: 0.75rem;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: var(--accent);
-            font-weight: 800;
-            margin-bottom: 0.4rem;
-        }
-
-        .info-text {
-            font-size: 0.95rem;
-            color: #f1f5f9;
-            line-height: 1.5;
-        }
-
-        .timestamp {
-            font-size: 0.8rem;
+        .student-info p {
             color: var(--text-muted);
-            margin-top: 0.5rem;
-            margin-bottom: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .subject-badge {
+            background-color: rgba(168, 85, 247, 0.15);
+            color: var(--accent);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+            padding: 0.35rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+
+        .card-body p {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e5e7eb;
+        }
+
+        .availability-box {
+            background-color: #0f172a;
+            border: 1px solid #1e293b;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            font-size: 0.9rem;
             display: flex;
             align-items: center;
             gap: 0.5rem;
         }
 
-        .card-actions {
-            display: flex;
-            gap: 1rem;
-            margin-top: auto;
+        .availability-box span {
+            color: var(--accent);
+            font-weight: 700;
         }
 
-        .btn {
-            padding: 0.75rem 1rem;
+        .card-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+
+        /* Interactive Toolkit Button Engine */
+        button, .btn {
+            padding: 0.75rem 1.25rem;
             border-radius: 8px;
-            font-size: 0.9rem;
             font-weight: 700;
+            font-size: 0.9rem;
             cursor: pointer;
             border: none;
             transition: background-color 0.2s, transform 0.1s;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            flex: 1;
+            gap: 0.5rem;
+            text-decoration: none;
         }
 
-        .btn-action {
-            background-color: var(--accent);
-            color: white;
-        }
-        .btn-action:hover { background-color: var(--accent-hover); }
-        .btn-action:active { transform: scale(0.97); }
+        button:active, .btn:active { transform: scale(0.98); }
 
-        .btn-delete {
-            background-color: rgba(239, 68, 68, 0.1);
-            color: var(--danger);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-        }
-        .btn-delete:hover { 
-            background-color: var(--danger); 
-            color: white;
-            border-color: var(--danger);
-        }
+        .btn-primary { background-color: var(--accent); color: white; }
+        .btn-primary:hover { background-color: var(--accent-hover); }
 
-        .no-requests {
-            grid-column: 1 / -1;
-            background-color: var(--card-bg);
-            border: 2px dashed #334155;
-            padding: 5rem 2rem;
-            border-radius: 20px;
-            text-align: center;
-            color: var(--text-muted);
-            font-size: 1.2rem;
-            font-weight: 600;
-        }
+        .btn-danger { background-color: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid rgba(239, 68, 68, 0.3); }
+        .btn-danger:hover { background-color: var(--danger); color: white; }
 
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: var(--modal-bg); 
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            display: flex; justify-content: center; align-items: center;
-            z-index: 6000; display: none; 
-        }
+        .btn-success { background-color: var(--success); color: white; width: 100%; margin-top: 1rem; }
+        .btn-success:hover { background-color: var(--success-hover); }
 
-        .modal-box {
-            background-color: #111827; 
-            border: 1px solid #334155;
-            padding: 3rem 2.5rem; 
-            border-radius: 20px; 
-            max-width: 550px; 
+        .btn-secondary { background-color: #374151; color: white; flex: 1; }
+        .btn-secondary:hover { background-color: #4b5563; }
+
+        input, textarea {
+            background-color: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-size: 0.95rem;
             width: 100%;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
-            text-align: left;
+            margin-top: 0.35rem;
         }
 
-        .modal-box h2 { 
-            font-size: 1.65rem; 
-            font-weight: 800;
-            margin-bottom: 0.5rem; 
-            background: linear-gradient(to right, #f8fafc, #c084fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .modal-box p { font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.5;}
-        
-        .modal-group { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.5rem; }
-        .modal-group label { font-weight: 700; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); }
-        .modal-group input { max-width: 100%; margin-bottom: 0; }
-
-        .modal-actions { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 2rem; }
-        .modal-actions button { 
-            flex: 1; 
-            padding: 0.85rem; 
-            border-radius: 10px; 
-            font-weight: 700; 
-            cursor: pointer; 
-            border: none; 
-            transition: background-color 0.2s;
-            font-size: 0.9rem;
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
         }
 
-        .hidden { display: none !important; }
+        /* Modal Overlay Subsystem */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.75);
+            backdrop-filter: blur(4px);
+            z-index: 6000;
+            align-items: center;
+            justify-content: center;
+        }
 
-        @media (max-width: 768px) {
-            .navbar { padding: 0 1.5rem; }
-            header h1 { font-size: 2rem; }
-            .grid-container { grid-template-columns: 1fr; }
+        .modal-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+        }
+
+        .modal-card h2 {
+            margin-bottom: 1.5rem;
+            font-size: 1.35rem;
+        }
+
+        .modal-form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-form-group label {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .modal-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .modal-footer-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* High-End Aesthetic Footer Styles */
+        .admin-footer {
+            margin-top: auto;
+            width: 100%;
+            padding: 2rem 0 0 0;
+            background-color: transparent;
+            position: relative;
+            z-index: 4000;
+        }
+
+        .footer-line {
+            height: 1px;
+            width: 100%;
+            background: linear-gradient(to right, transparent, #334155, transparent);
+            margin-bottom: 1.5rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .footer-left, .footer-right {
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .developer-link {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 700;
+            margin-left: 0.25rem;
+            transition: color 0.2s, text-shadow 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .developer-link span {
+            font-size: 0.75rem;
+            color: var(--accent);
+            transition: transform 0.2s;
+        }
+
+        .developer-link:hover {
+            color: var(--accent);
+            text-shadow: 0 0 8px rgba(168, 85, 247, 0.4);
+        }
+
+        .developer-link:hover span {
+            transform: translate(2px, -2px);
+            color: var(--accent-hover);
+        }
+
+        @media (max-width: 1024px) {
+            .dashboard-container { grid-template-columns: 1fr; }
+            .footer-content { flex-direction: column; text-align: center; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="nav-logo">ACE<span> CLUB</span></div>
-        <div class="badge">Admin Control</div>
-    </nav>
+    <div class="header">
+        <h1>ACE CLUB <span>Ledger Panel</span></h1>
+        <div id="adminBadge" style="display:none;" class="subject-badge">Secured Operator Stream</div>
+    </div>
 
-    <div class="container">
+    <div class="login-container" id="loginGateway">
+        <div class="login-card">
+            <h2>System Access Required</h2>
+            <p>Input security handshake parameter token override to view operational data streams.</p>
+            <input type="password" id="gatekey" placeholder="Enter Token Key...">
+            <button class="btn-primary" style="width:100%; margin-top:1.25rem;" onclick="verifyGatekey()">Initialize Handshake</button>
+        </div>
+    </div>
+
+    <div class="dashboard-container" id="dashboardPanel">
+        <div class="requests-panel">
+            <div class="panel-title">Active Inbound Queue</div>
+            <div id="queueContainer" class="requests-panel">
+                </div>
+        </div>
         
-        <div id="loginArea" class="login-card">
-            <h2>Ace Club Data Center</h2>
-            <p>Enter the administrator gateway access token to pull the cloud stream.</p>
-            <input type="password" id="accessCode" placeholder="Enter system password...">
-            <br>
-            <button id="loginBtn" class="cta-btn">Verify Token</button>
-        </div>
-
-        <div id="dashboardArea" class="hidden">
-            <header>
-                <h1>Live Booking Ledger</h1>
-                <p style="color: #34d399; font-weight: 600; margin-bottom: 1rem;">✓ Security handshake valid. Connection to Firestore collection alive.</p>
-                <p>Review incoming session requests and manage your client queue in real-time.</p>
-            </header>
-
-            <div class="grid-container" id="ledgerGrid">
-                <div class="no-requests" id="loadingState">Synchronizing cloud database pipelines...</div>
+        <div class="requests-panel">
+            <div class="panel-title">System Metrics & Controls</div>
+            <div class="request-card">
+                <h3>Queue Monitoring Metrics</h3>
+                <p style="color:var(--text-muted); font-size:0.9rem; margin-top:0.5rem;">
+                    Active Pipeline Inbound Packets: <span id="metricCount" style="color:var(--accent); font-weight:700;">0</span>
+                </p>
             </div>
         </div>
     </div>
 
-    <div id="calendarModal" class="modal-overlay">
-        <div class="modal-box">
+    <div class="modal-overlay" id="schedulerModal">
+        <div class="modal-card">
             <h2>Process Session Scheduling</h2>
-            <p id="modalSubtext">Configuring timeslots...</p>
+            <div class="modal-form-group">
+                <label>Student Node Context</label>
+                <input type="text" id="modalStudentName" readonly>
+            </div>
+            <div class="modal-form-group">
+                <label>Target Academic Track</label>
+                <input type="text" id="modalSubject" readonly>
+            </div>
+            <div class="modal-row">
+                <div class="modal-form-group">
+                    <label>Calculated Target Date</label>
+                    <input type="date" id="modalDate">
+                </div>
+                <div class="modal-form-group">
+                    <label>Calculated Target Time</label>
+                    <input type="time" id="modalTime">
+                </div>
+            </div>
             
-            <p id="aiLog" style="color: var(--ai-blue); font-size: 0.85rem; margin-top: -1rem; margin-bottom: 1.5rem; font-weight: 700;"></p>
-            
-            <div class="modal-group">
-                <label>Set Event Date</label>
-                <input type="date" id="eventDate">
-            </div>
-            <div class="modal-group">
-                <label>Start Time</label>
-                <input type="time" id="startTime">
-            </div>
-            <div class="modal-group">
-                <label>End Time</label>
-                <input type="time" id="endTime">
-            </div>
+            <button class="btn-success" id="gcalBtn" target="_blank">Sync Google Cal Template ↗</button>
+            <button class="btn-primary" id="gmailBtn" target="_blank" style="width:100%; margin-top: 0.5rem; background-color: #2563eb;">Draft Web Gmail Confirmation ↗</button>
 
-            <div class="modal-actions">
-                <button id="govGoogleBtn" style="background-color: var(--success); color: white;">Sync Google Cal</button>
-                <button id="sendEmailBtn" style="background-color: var(--email-blue); color: white;">Email Confirmation</button>
-                <button id="closeModalBtn" style="background-color: #475569; color: white; flex-basis: 100%;">Close / Done</button>
+            <div class="modal-footer-actions">
+                <button class="btn-secondary" onclick="closeScheduler()">Close Engine Pipeline</button>
             </div>
         </div>
     </div>
+
+    <footer class="admin-footer">
+        <div class="footer-line"></div>
+        <div class="footer-content">
+            <p class="footer-left">&copy; 2026 ACE CLUB Data Hub. All rights reserved.</p>
+            <p class="footer-right">
+                Engineered by 
+                <a href="https://github.com/sashwinsanthosh" target="_blank" class="developer-link">
+                    Sashwin Santhosh <span>↗</span>
+                </a>
+            </p>
+        </div>
+    </footer>
 
     <script>
+        // Placeholders automatically handled by Vercel deployment engine
         const firebaseConfig = {
-            apiKey: "AIzaSyCSAo-FqL7wq_4VwwkUrOdQc-Skn7fUTkc",
-            authDomain: "ace-club-portal.firebaseapp.com",
-            projectId: "ace-club-portal",
-            storageBucket: "ace-club-portal.firebasestorage.app",
-            messagingSenderId: "771528519998",
-            appId: "1:771528519998:web:044863e838b2f7d23e3c6f"
+            apiKey: "%%FIREBASE_API_KEY%%",
+            authDomain: "%%FIREBASE_AUTH_DOMAIN%%",
+            projectId: "%%FIREBASE_PROJECT_ID%%",
+            storageBucket: "%%FIREBASE_STORAGE_BUCKET%%",
+            messagingSenderId: "%%FIREBASE_MESSAGING_SENDER_ID%%",
+            appId: "%%FIREBASE_APP_ID%%"
         };
 
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
-
-        let activeRecord = null;
-
-        document.getElementById('loginBtn').addEventListener('click', function() {
-            const token = document.getElementById('accessCode').value;
-            if (token === "123") {
-                document.getElementById('loginArea').classList.add('hidden');
-                document.getElementById('dashboardArea').classList.remove('hidden');
-                startLiveStream();
-            } else {
-                alert("Access Denied: Token Invalid.");
-            }
-        });
+        let activeRequestsMap = {};
 
         function escapeHTML(str) {
             if (!str) return '';
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
-            );
+            return str.replace(/[&<>"']/g, function(match) {
+                const escapeMap = {
+                    '&': '&amp;',
+                    '<': '&lt;',
+                    '>': '&gt;',
+                    '"': '&quot;',
+                    "'": '&#039;'
+                };
+                return escapeMap[match];
+            });
         }
 
-        function startLiveStream() {
-            db.collection("requests").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                const grid = document.getElementById("ledgerGrid");
-                grid.innerHTML = ""; 
+        function verifyGatekey() {
+            const token = document.getElementById('gatekey').value;
+            if (token === "123") {
+                document.getElementById('loginGateway').style.display = 'none';
+                document.getElementById('dashboardPanel').style.display = 'grid';
+                document.getElementById('adminBadge').style.display = 'block';
+                initializeRealtimeSyncEngine();
+            } else {
+                alert("Handshake authorization failed. Invalid security token parameters.");
+            }
+        }
 
-                if (snapshot.empty) {
-                    grid.innerHTML = `<div class="no-requests">No incoming session requests found in the ledger.</div>`;
-                    return;
+        function initializeRealtimeSyncEngine() {
+            db.collection("requests").orderBy("timestamp", "desc")
+              .onSnapshot((snapshot) => {
+                  const container = document.getElementById('queueContainer');
+                  const metric = document.getElementById('metricCount');
+                  container.innerHTML = "";
+                  metric.innerText = snapshot.size;
+
+                  if (snapshot.size === 0) {
+                      container.innerHTML = `<div class="request-card" style="text-align:center; color:var(--text-muted);">Inbound ledger pipeline empty.</div>`;
+                      return;
+                  }
+
+                  snapshot.forEach((doc) => {
+                      const data = doc.data();
+                      activeRequestsMap[doc.id] = data;
+
+                      const safeName = escapeHTML(data.name);
+                      const safeEmail = escapeHTML(data.email);
+                      const safeSubject = escapeHTML(data.subject);
+                      const safeDetails = escapeHTML(data.details);
+                      const safeAvailability = escapeHTML(data.availability);
+
+                      const templateLayoutCard = `
+                          <div class="request-card" id="card-${doc.id}">
+                              <div class="card-header">
+                                  <div class="student-info">
+                                      <h3>${safeName}</h3>
+                                      <p>${safeEmail}</p>
+                                  </div>
+                                  <div class="subject-badge">${safeSubject}</div>
+                              </div>
+                              <div class="card-body">
+                                  <p>${safeDetails}</p>
+                              </div>
+                              <div class="availability-box">
+                                  <span>Availability Vector:</span> ${safeAvailability}
+                              </div>
+                              <div class="card-actions">
+                                  <button class="btn-primary" onclick="openSchedulerEngine('${doc.id}')">Schedule Session</button>
+                                  <button class="btn-danger" onclick="dismissLedgerRecord('${doc.id}')">Dismiss Entry</button>
+                              </div>
+                          </div>
+                      `;
+                      container.innerHTML += templateLayoutCard;
+                  });
+              }, (error) => {
+                  console.error("Pipeline synchronization failure: ", error);
+              });
+        }
+
+        function openSchedulerEngine(docId) {
+            const data = activeRequestsMap[docId];
+            if (!data) return;
+
+            document.getElementById('modalStudentName').value = data.name;
+            document.getElementById('modalSubject').value = data.subject;
+
+            let textToParse = data.availability.toLowerCase()
+                .replace(/monday/g, "Monday")
+                .replace(/tuesday/g, "Tuesday")
+                .replace(/wednesday/g, "Wednesday")
+                .replace(/thursday/g, "Thursday")
+                .replace(/friday/g, "Friday")
+                .replace(/saturday/g, "Saturday")
+                .replace(/sunday/g, "Sunday")
+                .replace(/mondy/g, "Monday")
+                .replace(/afert/g, "after");
+
+            let parsedDate = new Date();
+            let parsedResults = chrono.parse(textToParse);
+
+            if (parsedResults && parsedResults.length > 0) {
+                if (parsedResults[0].start) {
+                    parsedDate = parsedResults[0].start.date();
+                }
+            }
+
+            let year = parsedDate.getFullYear();
+            let month = String(parsedDate.getMonth() + 1).padStart(2, '0');
+            let day = String(parsedDate.getDate()).padStart(2, '0');
+            document.getElementById('modalDate').value = `${year}-${month}-${day}`;
+
+            let hours = String(parsedDate.getHours()).padStart(2, '0');
+            let minutes = String(parsedDate.getMinutes()).padStart(2, '0');
+            if (hours === "00" && minutes === "00") {
+                hours = "16"; 
+            }
+            document.getElementById('modalTime').value = `${hours}:${minutes}`;
+
+            setupDynamicIntegrationEngines(data, docId);
+            document.getElementById('schedulerModal').style.display = 'flex';
+        }
+
+        function setupDynamicIntegrationEngines(data, docId) {
+            const gcalBtn = document.getElementById('gcalBtn');
+            const gmailBtn = document.getElementById('gmailBtn');
+
+            function updateLinks() {
+                const selectedDateStr = document.getElementById('modalDate').value;
+                const selectedTimeStr = document.getElementById('modalTime').value;
+
+                if (!selectedDateStr || !selectedTimeStr) return;
+
+                const startDateTime = new Date(`${selectedDateStr}T${selectedTimeStr}:00`);
+                const endDateTime = new Date(startDateTime.getTime() + (60 * 60 * 1000));
+
+                function formatISO(dateObj) {
+                    return dateObj.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
                 }
 
-                snapshot.forEach((doc) => {
-                    const data = doc.data();
-                    const requestId = doc.id;
-                    
-                    const safeName = data.name ? data.name.replace(/['"]/g, "") : "Unknown Student";
-                    const safeEmail = data.email ? data.email.replace(/['"]/g, "") : "";
-                    const safeSubject = data.subject ? data.subject.replace(/['"]/g, "") : "";
-                    const safeDetails = data.details ? data.details.replace(/['"]/g, "") : "";
-                    const safeAvail = data.availability ? data.availability.replace(/['"]/g, "") : "";
-                    
-                    let dateString = "Pending Time Log...";
-                    if (data.timestamp) {
-                        const jsDate = data.timestamp.toDate();
-                        dateString = jsDate.toLocaleDateString() + ' @ ' + jsDate.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    }
+                const gCalStart = formatISO(startDateTime);
+                const gCalEnd = formatISO(endDateTime);
 
-                    // Properly format parameters for the inline function call
-                    const onClickParams = `openApprovalModal('${requestId}', '${safeName.replace(/'/g, "\\'")}', '${safeEmail.replace(/'/g, "\\'")}', '${safeSubject.replace(/'/g, "\\'")}', '${safeDetails.replace(/'/g, "\\'")}', '${safeAvail.replace(/'/g, "\\'")}')`;
+                const calTitle = encodeURIComponent(`Ace Club Tutoring Session: ${data.subject}`);
+                const calDetails = encodeURIComponent(`Automated Session Confirmation Pipeline via Ace Ledger System.\n\nReview Targets:\n${data.details}`);
+                const calLocation = encodeURIComponent("Online Discord Matrix Server / Google Meet");
+                const studentEmailEnc = encodeURIComponent(data.email);
 
-                    const cardHTML = `
-                        <div class="request-card" id="card-${requestId}">
-                            <div class="subject-tag">${escapeHTML(safeSubject)}</div>
-                            
-                            <div>
-                                <div class="student-name">${escapeHTML(safeName)}</div>
-                                
-                                ${safeEmail ? `
-                                <div class="info-block">
-                                    <div class="info-label">Contact Email</div>
-                                    <div class="info-text" style="color: var(--ai-blue);">${escapeHTML(safeEmail)}</div>
-                                </div>` : ''}
+                const customTemplateUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${calTitle}&dates=${gCalStart}/${gCalEnd}&details=${calDetails}&location=${calLocation}&add=${studentEmailEnc}`;
+                gcalBtn.onclick = () => { window.open(customTemplateUrl, '_blank'); };
 
-                                <div class="info-block">
-                                    <div class="info-label">Topics to Review</div>
-                                    <div class="info-text">${escapeHTML(safeDetails)}</div>
-                                </div>
-                                
-                                <div class="info-block">
-                                    <div class="info-label">Student Availability</div>
-                                    <div class="info-text">${escapeHTML(safeAvail)}</div>
-                                </div>
-                            </div>
+                const formattedDisplayDate = startDateTime.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+                const formattedDisplayTime = startDateTime.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
-                            <div>
-                                <div class="timestamp">
-                                    <span>🕒</span> Logged: ${dateString}
-                                </div>
-                                
-                                <div class="card-actions">
-                                    <button class="btn btn-action" onclick="${onClickParams}">Schedule</button>
-                                    <button class="btn btn-delete" onclick="deleteRequest('${requestId}')">Dismiss</button>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    grid.innerHTML += cardHTML;
+                const emailSubject = encodeURIComponent(`Ace Club Tutoring: Session Scheduled!`);
+                const emailBody = encodeURIComponent(
+                    `Hi ${data.name},\n\n` +
+                    `Your tutoring request has been processed and successfully cataloged! Here are the details for your upcoming lesson:\n\n` +
+                    `• Subject Stream: ${data.subject}\n` +
+                    `• Scheduled Date: ${formattedDisplayDate}\n` +
+                    `• Scheduled Time: ${formattedDisplayTime}\n\n` +
+                    `I have sent a Google Calendar invitation to this email address. Please make sure to check your inbox (and spam folder) and click "Yes" to accept the invite so it registers on your calendar.\n\n` +
+                    `Get ready to map out your concepts and hit your academic goals! If you have any remaining questions or text files to share, reply directly to this email.\n\n` +
+                    `Best regards,\n` +
+                    `Ace Club Tutoring Management`
+                );
+
+                const webGmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${studentEmailEnc}&su=${emailSubject}&body=${emailBody}`;
+                gmailBtn.onclick = () => { window.open(webGmailUrl, '_blank'); };
+            }
+
+            document.getElementById('modalDate').onchange = updateLinks;
+            document.getElementById('modalTime').onchange = updateLinks;
+            updateLinks();
+        }
+
+        function closeScheduler() {
+            document.getElementById('schedulerModal').style.display = 'none';
+        }
+
+        function dismissLedgerRecord(docId) {
+            if (confirm("Execute data purge parameter? This removes the request record permanently from the cloud infrastructure stack.")) {
+                db.collection("requests").doc(docId).delete()
+                .then(() => {
+                    console.log("Record decoupled safely from data cloud cluster context.");
+                })
+                .catch((error) => {
+                    alert("Error executing record execution pipeline override context.");
+                    console.error(error);
                 });
-            }, (error) => {
-                console.error("Database sync error: ", error);
-                document.getElementById("ledgerGrid").innerHTML = `<div class="no-requests" style="color:var(--danger)">⚠️ Failed to authenticate database stream pipeline.</div>`;
-            });
-        }
-
-        function openApprovalModal(id, name, email, subject, details, availability) {
-            activeRecord = { id, name, email, subject, details };
-            
-            document.getElementById('modalSubtext').innerText = `Matching ${name} (${email || 'No email collected'}) for ${subject}.\nStudent requested: "${availability}"`;
-            
-            document.getElementById('eventDate').value = "";
-            document.getElementById('startTime').value = "";
-            document.getElementById('endTime').value = "";
-            document.getElementById('aiLog').innerText = "";
-            
-            let cleanedText = availability.toLowerCase().trim();
-            cleanedText = cleanedText.replace(/\bafert\b/g, "after").replace(/\baftr\b/g, "after");
-            cleanedText = cleanedText.replace(/\bpm\b/g, " pm").replace(/\bam\b/g, " am");
-
-            let targetDate = new Date();
-            let hours = "16"; 
-            let minutes = "00";
-            let overrideSuccess = false;
-
-            const weekdaysMap = {
-                "sunday": 0, "monday": 1, "tuesday": 2, "wednesday": 3, 
-                "thursday": 4, "friday": 5, "saturday": 6
-            };
-
-            for (let dayName in weekdaysMap) {
-                if (cleanedText.includes(dayName)) {
-                    let targetDayIndex = weekdaysMap[dayName];
-                    let currentDayIndex = targetDate.getDay();
-                    
-                    let daysToAdd = (targetDayIndex + 7 - currentDayIndex) % 7;
-                    if (daysToAdd === 0) daysToAdd = 7; 
-                    
-                    targetDate.setDate(targetDate.getDate() + daysToAdd);
-                    
-                    if (cleanedText.includes("1") || cleanedText.includes("1pm")) hours = "13";
-                    if (cleanedText.includes("2") || cleanedText.includes("2pm")) hours = "14";
-                    if (cleanedText.includes("3") || cleanedText.includes("3pm")) hours = "15";
-                    if (cleanedText.includes("4") || cleanedText.includes("4pm")) hours = "16";
-                    if (cleanedText.includes("5") || cleanedText.includes("5pm")) hours = "17";
-                    if (cleanedText.includes("6") || cleanedText.includes("6pm")) hours = "18";
-                    
-                    overrideSuccess = true;
-                    break;
-                }
-            }
-
-            try {
-                if (overrideSuccess) {
-                    const year = targetDate.getFullYear();
-                    const month = String(targetDate.getMonth() + 1).padStart(2, '0');
-                    const day = String(targetDate.getDate()).padStart(2, '0');
-                    const calculatedEndHour = String((parseInt(hours) + 1) % 24).padStart(2, '0');
-
-                    document.getElementById('eventDate').value = `${year}-${month}-${day}`;
-                    document.getElementById('startTime').value = `${hours}:${minutes}`;
-                    document.getElementById('endTime').value = `${calculatedEndHour}:${minutes}`;
-                    document.getElementById('aiLog').innerText = "✨ Auto-Fill Engine: Repaired typo, resolved text phrase context, and mapped calendar logs!";
-                } else {
-                    const parsedTimeline = chrono.parseDate(cleanedText);
-                    if (parsedTimeline) {
-                        const trackingDate = new Date(parsedTimeline);
-                        const year = trackingDate.getFullYear();
-                        const month = String(trackingDate.getMonth() + 1).padStart(2, '0');
-                        const day = String(trackingDate.getDate()).padStart(2, '0');
-                        
-                        const libHours = String(trackingDate.getHours()).padStart(2, '0');
-                        const libMin = String(trackingDate.getMinutes()).padStart(2, '0');
-                        const calculatedEndHour = String((parseInt(libHours) + 1) % 24).padStart(2, '0');
-
-                        document.getElementById('eventDate').value = `${year}-${month}-${day}`;
-                        document.getElementById('startTime').value = `${libHours}:${libMin}`;
-                        document.getElementById('endTime').value = `${calculatedEndHour}:${libMin}`;
-                        document.getElementById('aiLog').innerText = "✨ Auto-Fill Engine: Extracted absolute timestamp coordinates!";
-                    } else {
-                        document.getElementById('aiLog').innerText = "ℹ️ Auto-Fill Engine: Free format detected. Please fill parameters manually.";
-                    }
-                }
-            } catch (err) {
-                document.getElementById('aiLog').innerText = "ℹ/ Manual configuration fallback active.";
-            }
-
-            document.getElementById('calendarModal').style.display = 'flex';
-        }
-
-        document.getElementById('closeModalBtn').addEventListener('click', function() {
-            document.getElementById('calendarModal').style.display = 'none';
-            activeRecord = null;
-        });
-
-        document.getElementById('govGoogleBtn').addEventListener('click', function() {
-            if (!activeRecord) return;
-
-            const dateInput = document.getElementById('eventDate').value;     
-            const startInput = document.getElementById('startTime').value;    
-            const endInput = document.getElementById('endTime').value;        
-
-            if (!dateInput || !startInput || !endInput) {
-                alert("Please select a Date, Start Time, and End Time first!");
-                return;
-            }
-
-            const cleanDate = dateInput.replace(/-/g, "");
-            const cleanStart = startInput.replace(/:/g, "");
-            const cleanEnd = endInput.replace(/:/g, "");
-
-            const startTimeline = `${cleanDate}T${cleanStart}00`;
-            const endTimeline = `${cleanDate}T${cleanEnd}00`;
-
-            const baseUrl = "https://calendar.google.com/calendar/render?action=TEMPLATE";
-            const title = encodeURIComponent(`[Ace Club] ${activeRecord.subject} Tutoring with ${activeRecord.name}`);
-            const textDetails = encodeURIComponent(`Student Name: ${activeRecord.name}\nEmail: ${activeRecord.email || 'None'}\nTopic Details: ${activeRecord.details}`);
-            
-            let fullUrl = `${baseUrl}&text=${title}&dates=${startTimeline}/${endTimeline}&details=${textDetails}`;
-            if (activeRecord.email) {
-                fullUrl += `&add=${encodeURIComponent(activeRecord.email)}`;
-            }
-            
-            window.open(fullUrl, "_blank");
-        });
-
-        // Web Gmail Direct Injection Engine
-        document.getElementById('sendEmailBtn').addEventListener('click', function() {
-            if (!activeRecord) return;
-            if (!activeRecord.email) {
-                alert("This student didn't provide an email address.");
-                return;
-            }
-
-            const dateInput = document.getElementById('eventDate').value;
-            const startInput = document.getElementById('startTime').value;
-
-            if (!dateInput || !startInput) {
-                alert("Please select a Date and Start Time first so the email details match!");
-                return;
-            }
-
-            const formattedDate = new Date(dateInput + 'T00:00:00').toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-
-            const emailSubject = `Ace Club Session Confirmed! Let's Crush Your ${activeRecord.subject} Goals 🚀`;
-            const emailBody = `Hi ${activeRecord.name},
-
-Fantastic news! Your booking request for ${activeRecord.subject} has been officially approved and locked into the ledger. 
-
-Taking the initiative to schedule this session shows real dedication to your growth. This is the first major step toward breaking through your academic bottlenecks, and you should be proud of taking action today!
-
-🗓 Here are your session details:
-• Scheduled Date: ${formattedDate}
-• Start Time: ${startInput}
-
-⚠️ CRITICAL NEXT STEPS:
-1. Check Your Inbox: I have sent a calendar invitation directly to your email (${activeRecord.email}). 
-2. Accept the Invitation: Please open that invitation and click "YES" or "ACCEPT" to lock this into your schedule.
-3. Review Your Calendar: Double-check your Google Calendar application to make sure the time slot shows up smoothly on your end.
-
-We are going to map out an absolute roadmap for your targeted topics (${activeRecord.details}) and make sure you walk away feeling fully confident. 
-
-Bring your questions, bring your energy, and let's crush it!
-
-Best regards,
-Ace Club Administration`;
-
-            const targetStudent = encodeURIComponent(activeRecord.email);
-            const escapedSubject = encodeURIComponent(emailSubject);
-            const escapedBody = encodeURIComponent(emailBody);
-
-            const gmailWebUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=${targetStudent}&su=${escapedSubject}&body=${escapedBody}`;
-
-            window.open(gmailWebUrl, '_blank');
-        });
-
-        function deleteRequest(id) {
-            if (confirm("Permanently wipe this record from database queue?")) {
-                db.collection("requests").doc(id).delete();
             }
         }
     </script>
