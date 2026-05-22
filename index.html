@@ -484,16 +484,57 @@
         });
     </script>
 </body>
-<footer class="admin-footer">
-    <div class="footer-line"></div>
-    <div class="footer-content">
-        <p class="footer-left">&copy; 2026 ACE CLUB Data Hub. All rights reserved.</p>
-        <p class="footer-right">
-            Engineered by 
-            <a href="https://github.com/sashwinnnn" target="_blank" class="developer-link">
-                Sashwin Santhosh <span>↗</span>
-            </a>
-        </p>
-    </div>
+<footer class="tech-lead-footer">
+  <p>Platform Engineered & Maintained by Tech Lead — 
+     <a href="https://github.com/sashwinnnn" target="_blank" rel="noopener noreferrer" class="footer-link">Sashwin Santhosh</a>
+  </p>
 </footer>
+
+<style>
+  .tech-lead-footer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px 0;
+    margin-top: 40px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    
+    /* Smoothly blends with your app's light or dark background */
+    background-color: transparent;
+    color: #6c757d; 
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+
+  .tech-lead-footer p {
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .footer-link {
+    color: #007bff; /* Sleek developer blue color */
+    text-decoration: none;
+    font-weight: 700; /* Makes your name punchy and bold */
+    transition: color 0.2s ease-in-out;
+  }
+
+  .footer-link:hover {
+    text-decoration: underline;
+    color: #0056b3; /* Darkens slightly on hover for a crisp effect */
+  }
+
+  /* Automatically adjusts font colors if your app uses a dark theme */
+  @media (prefers-color-scheme: dark) {
+    .tech-lead-footer {
+      color: #a1a1a1;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .footer-link {
+      color: #3b82f6;
+    }
+  }
+</style>
 </html>
